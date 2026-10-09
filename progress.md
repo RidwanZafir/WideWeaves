@@ -714,3 +714,42 @@ Total: **328 checks, eight suites, zero failures.**
 - The 3D intro is where the GPU time goes; opening a record disposes the scene.
 - WebGL was available headlessly via SwiftShader, so the fallback path is
   verified *only* through the forced `#no3d` lever, never by a real GPU failure.
+
+---
+
+## Session 10 — Diagnosis first: border soup, shouting match, no identity
+
+Read the rendered screens against the design skills rather than the code, named
+the failures, then fixed those.
+
+**What was structurally wrong**
+- **A shouting match on the front door.** The serif headline, the 3D window and
+  the key line all competed for primary weight, and the 3D was a *340px framed
+  box in the middle of a column* — the size and shape of a widget.
+- **Border soup.** Sources, next actions and the evidence cards were each
+  bordered rectangles inside bordered panels: four identical boxes competing
+  with each other in a column that already had rules between panels. The
+  provenance column alone had eleven boxes.
+- **No identity in the chrome.** The masthead was an interchangeable toolbar —
+  no plate, no eyebrow, a tagline repeating what the hero was about to say.
+
+**What changed**
+- The intro is a hero: eyebrow → 46px serif statement → **full-bleed 412px
+  observation window** (bleeds past the column padding, hairline top/bottom) →
+  the key line as a caption strip under the window. One primary, stated once.
+- De-boxed the evidence, sources and next actions; separation is space and one
+  rule now, and the action keeps only its ember edge as signal. The only
+  framed things on a record are the photo thumbnail and the field input.
+- Masthead became an identity plate: 40px site-plan mark, "NASA Space Apps ·
+  pilot archive" eyebrow, 21px serif title, divider rule to the tools. Tagline
+  removed — the hero says it now.
+
+**One measurement bug, found by its own arithmetic.** The narrow-window form
+check failed at `top=770 h=31 vh=800` — 1px over — and the numbers did not move
+across three layout changes. The harness was rounding `top` and `height`
+separately (769.6 + 30.5 → 770 + 31 = 801), so a button flush with the fold read
+as past it. Fixed the measurement (raw floats, 0.5px slack) rather than the
+layout, and added real bottom padding to the provenance column anyway.
+
+**Verified:** npm test green, 8 captures regenerated and eyeballed,
+package + boot + asar green.

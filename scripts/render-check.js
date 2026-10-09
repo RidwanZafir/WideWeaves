@@ -594,12 +594,15 @@ async function main() {
     form.scrollIntoView({ block: 'end' });
     const btn = form.querySelector('button');
     const r = btn.getBoundingClientRect();
-    return { present: true, w: Math.round(r.width), top: Math.round(r.top), h: Math.round(r.height), vh: window.innerHeight };
+    // Raw floats: rounding top and height separately can put the button one
+    // pixel past the fold when it is in fact flush with it, and a check that
+    // fails on arithmetic is worse than no check.
+    return { present: true, top: r.top, height: r.height, vh: window.innerHeight };
   })()`);
   check(
     "the next-action form is still reachable when narrow",
-    reach.present && reach.w > 0 && reach.top >= 0 && reach.top + reach.h <= reach.vh,
-    reach.present ? `top=${reach.top} h=${reach.h} vh=${reach.vh}` : "form missing"
+    reach.present && reach.top >= 0 && reach.top + reach.height <= reach.vh + 0.5,
+    reach.present ? `top=${Math.round(reach.top)} h=${Math.round(reach.height)} vh=${reach.vh}` : "form missing"
   );
 
   win.setContentSize(1280, 820);

@@ -277,23 +277,32 @@
       var g = groups[code];
       return (
         '<div class="stake"><dt>' + escapeHtml(g.name) + "</dt>" +
-        "<dd>" + g.items.length + (g.items.length === 1 ? " record" : " records") + " on this ground.</dd></div>"
+        "<dd>" + g.items.length + (g.items.length === 1 ? " record" : " records") + " left on this ground.</dd></div>"
       );
     }).join("");
 
+    var eyebrow = state.allObjects.length + " records · " + order.length + " worlds";
+
     refs.record.innerHTML =
       '<div class="intro">' +
-      "<h2>Everything here is still out there.</h2>" +
-      '<p class="lede">Five records of hardware we left on the Moon and Mars. ' +
-      "Colour is certainty; shape is kind.</p>" +
+      '<div class="hero">' +
+      '<p class="hero-eyebrow">Pilot archive · ' + escapeHtml(eyebrow) + "</p>" +
+      '<h2 class="hero-title">Everything here is still out there.</h2>' +
+      '<div class="viewport-wrap">' +
       '<div class="viewport" id="viewport" hidden></div>' +
       '<div class="map-fallback" id="map-fallback" hidden>' +
       '<div class="map">' + map + "</div>" +
       '<p class="map-key">Colour says how well we know it. Shape says what it is.</p>' +
       "</div>" +
+      "</div>" +
+      '<p class="hero-caption">' +
+      "<span>Drag to orbit · click a mark to open its record</span>" +
+      '<span class="hero-rule">Colour is how well we know it. Shape is what it is.</span>' +
+      "</p>" +
+      "</div>" +
       '<dl class="stakes">' + stakes + "</dl>" +
-      '<p class="intro-hint">Drag to orbit; every mark opens its record. ' +
-      '<span class="k">/</span> jumps to search.</p>' +
+      '<p class="intro-hint"><span class="k">/</span> jumps to search. ' +
+      "Every mark on either ground is one of the five kinds in the key.</p>" +
       "</div>";
 
     mountScene();

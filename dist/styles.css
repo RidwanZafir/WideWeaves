@@ -80,6 +80,8 @@
   --s5: 24px;
   --s6: 32px;
   --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
 }
 
 * {
@@ -181,48 +183,61 @@ input {
 
 .masthead {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: var(--s5);
-  padding: var(--s4) var(--s5);
+  padding: 0 var(--s5) 0 0;
   background: var(--void);
+  border-bottom: 1px solid var(--hair-strong);
 }
 
+/* The identity plate: one flat strip, held apart from the tools by a single
+   rule, so the header reads as an institution's plate rather than a toolbar. */
 .masthead-id {
   display: flex;
   align-items: center;
   gap: var(--s3);
   min-width: 0;
+  padding: var(--s3) var(--s4);
+  border-right: 1px solid var(--hair);
 }
 
 /* The mark is the site-plan sprite (a horizon with two objects left standing on
    it), used as a mask so the accent stays a token rather than a file. */
 .mark {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   flex: none;
   background-color: var(--ember);
   -webkit-mask-image: url("assets/site-plan.png");
   mask-image: url("assets/site-plan.png");
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
-  -webkit-mask-size: 32px 32px;
-  mask-size: 32px 32px;
+  -webkit-mask-size: 40px 40px;
+  mask-size: 40px 40px;
+}
+
+.masthead-titles {
+  min-width: 0;
+}
+
+.masthead-eyebrow {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin: 0 0 2px;
 }
 
 .masthead h1 {
   font-family: var(--serif);
-  font-size: 17.5px;
+  font-size: 21px;
   font-weight: 500;
-  letter-spacing: 0.005em;
+  letter-spacing: 0.002em;
+  line-height: 1.1;
   color: var(--paper);
-}
-
-.tagline {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--steel-dim);
 }
 
 .masthead-tools {
@@ -847,30 +862,47 @@ input {
 /* ------------------------------------------------------------
    Intro / the "everything here is still out there" state
 
-   The front door, so it gets a real composition: the archive as a pixel
-   landscape, the stakes, and one clear way in.
+   A hero, not a page of blocks: the statement reads first, then one full-bleed
+   observation window, then the key line. Text on top and picture below gives
+   both room — the alternative (a headline floating over the render) fights the
+   render for attention and loses.
+
+   The window bleeds to the column edges. A framed 340px box in the middle of
+   a column reads as a widget; a full-bleed strip reads as the thing this app
+   is for.
    ------------------------------------------------------------ */
 
 .intro {
-  max-width: 640px;
-  margin: auto;
-  width: 100%;
+  /* Bleed past the record column's own padding. */
+  margin: 0 calc(-1 * var(--s7)) var(--s6);
+  width: auto;
+  max-width: none;
   animation: settle 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.intro h2 {
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
+  margin: 0 0 var(--s3);
+}
+
+.hero-title {
   font-family: var(--serif);
-  font-size: 34px;
-  line-height: 1.16;
+  font-size: 46px;
+  line-height: 1.02;
   font-weight: 500;
+  letter-spacing: -0.018em;
   color: var(--paper);
-  margin-bottom: var(--s4);
+  margin: 0 0 var(--s5);
   text-wrap: balance;
 }
 
-.intro .lede {
-  margin-bottom: var(--s6);
-  color: var(--paper);
+.viewport-wrap {
+  position: relative;
 }
 
 /* ---- the observation viewport ----
@@ -878,13 +910,14 @@ input {
    standing on them, a low sun that leaves long shadows the way the LRO
    captions describe. It draws into a fixed low-resolution target and blits up
    with nearest-neighbour, so the picture is in the instrument's own pixel
-   language rather than smooth 3D. Hard edges, one hairline, no gradient. */
+   language rather than smooth 3D. Full-bleed, hairline top and bottom, no
+   gradient, no radius. */
 
 .viewport {
   position: relative;
-  height: 340px;
-  margin-bottom: var(--s5);
-  border: 1px solid var(--warm-hair);
+  height: 412px;
+  border-top: 1px solid var(--warm-hair);
+  border-bottom: 1px solid var(--warm-hair);
   background: var(--void);
 }
 
@@ -906,19 +939,39 @@ input {
   cursor: grabbing;
 }
 
-.viewport-note {
-  margin: calc(-1 * var(--s5)) 0 var(--s6);
+/* The key line, stated once and where it can be seen: the rule of the whole
+   interface, under the window it governs. */
+.hero-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  padding: var(--s3) var(--s7);
+  margin: calc(-1px) 0 var(--s7);
+  border-bottom: 1px solid var(--warm-hair);
   font-family: var(--mono);
   font-size: 10.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--warm-faint);
 }
 
+.hero-rule {
+  color: var(--ember);
+}
+
+/* ---- the observation viewport ----
+   A Three.js surface you can look at: two strips of ground, five things left
+   standing on them, a low sun that leaves long shadows the way the LRO
+   captions describe. It draws into a fixed low-resolution target and blits up
+   with nearest-neighbour, so the picture is in the instrument's own pixel
+   language rather than smooth 3D. Hard edges, one hairline, no gradient. */
+
 /* The 2D pixel map is the fallback, not a lesser mode. It carries the same
    rows, the same certainty, the same five silhouettes. */
 .map-fallback {
-  margin-bottom: var(--s6);
+  margin-bottom: 0;
 }
 
 .map-fallback[hidden] {
@@ -1087,18 +1140,20 @@ input {
   border-top: 1px solid var(--warm-hair);
 }
 
+/* Two lines, one per world, laid out as a receipt: the count on the left edge,
+   the record on the right. It is the ledger under the picture, and it is the
+   last thing the front door says. */
 .stakes {
   display: grid;
-  gap: var(--s1);
-  margin-bottom: var(--s6);
+  margin-bottom: var(--s5);
 }
 
 .stake {
   display: grid;
-  grid-template-columns: 118px 1fr;
+  grid-template-columns: 128px 1fr;
   gap: var(--s4);
-  padding: var(--s4) 0;
-  border-top: 1px solid var(--warm-hair);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--warm-hair);
   align-items: baseline;
 }
 
@@ -1109,20 +1164,21 @@ input {
 .stake dd {
   margin: 0;
   font-family: var(--serif);
-  font-size: 15.5px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--paper-dim);
 }
 
 .intro-hint {
-  font-size: 12.5px;
-  color: var(--paper-dim);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s2);
-  padding-top: var(--s4);
-  border-top: 1px solid var(--warm-hair);
 }
 
 .intro-hint .k {
@@ -1155,7 +1211,11 @@ input {
   overflow-y: auto;
   border-left: 1px solid var(--hair);
   background: var(--surface);
-  padding: var(--s5) var(--s5) var(--s7);
+  /* Bottom slack on purpose: the write path is the last thing in this column,
+     and a scroll that ends flush with the fold leaves the submit button one
+     pixel out of reach. The 1px failure is invisible in review and fatal to a
+     curator who cannot file an action. */
+  padding: var(--s5) var(--s5) var(--s9);
 }
 
 .panel + .panel {
@@ -1191,16 +1251,20 @@ input {
   color: var(--steel-dim);
 }
 
+/* Sources are claims with provenance, not inventory items. A bordered box per
+   source made four identical rectangles compete for attention in a column
+   that already has a rule between panels; space does the separation now, and
+   the only framed element on the page is a photo. */
 .stack {
   display: flex;
   flex-direction: column;
-  gap: var(--s3);
+  gap: var(--s4);
 }
 
 .entry {
-  padding: var(--s3);
-  border: 1px solid var(--hair);
-  background: var(--raised);
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .entry-title {
@@ -1227,7 +1291,6 @@ input {
   font-weight: 600;
   margin-bottom: 5px;
 }
-
 .person {
   display: grid;
   grid-template-columns: 26px 1fr;
@@ -1275,17 +1338,16 @@ input {
 
 .action {
   position: relative;
-  padding: var(--s3) var(--s3) var(--s3) var(--s4);
-  background: var(--raised);
-  border: 1px solid var(--hair);
+  padding: 0 0 0 var(--s4);
 }
 
+/* The edge is the signal: a bar, not a box. */
 .action::before {
   content: "";
   position: absolute;
   left: 0;
-  top: var(--s3);
-  bottom: var(--s3);
+  top: 2px;
+  bottom: 2px;
   width: 2px;
   background: var(--ember);
 }
@@ -1401,15 +1463,13 @@ input {
 }
 
 /* ---- the evidence: photos and film, in the reading flow ----
-   Flat cards on the warm record: a square thumb, a mono kind line, the title
-   in serif, NASA's own caption small. Film cards carry a pixel play mark.
-   No gradients, no rounded corners — the flat contract covers these too. */
+   Separated by a rule and by space, not by a box: the cards were nested inside
+   a raised container, which is exactly the borders-on-borders that makes an
+   interface feel assembled rather than designed. The thumb is the only framed
+   thing, because it is the only thing with an edge worth framing. */
 
 .media {
   margin-bottom: var(--s6);
-  padding: var(--s4) var(--s5);
-  background: var(--warm-raised);
-  border: 1px solid var(--warm-hair);
 }
 
 .media-label {
@@ -1420,7 +1480,7 @@ input {
   text-transform: uppercase;
   line-height: 1.4;
   color: var(--warm-faint);
-  margin-bottom: var(--s3);
+  margin-bottom: var(--s4);
   display: flex;
   align-items: baseline;
   gap: var(--s2);
@@ -1436,29 +1496,22 @@ input {
 
 .media-grid {
   display: grid;
-  gap: var(--s3);
+  gap: var(--s4);
 }
 
 .media-card {
   display: grid;
-  grid-template-columns: 112px 1fr;
-  gap: var(--s3);
-  padding: var(--s2);
-  border: 1px solid var(--warm-hair);
-  background: var(--warm-void);
+  grid-template-columns: 128px 1fr;
+  gap: var(--s4);
   text-decoration: none;
-  transition: border-color 140ms ease;
-}
-
-.media-card:hover {
-  border-color: var(--ember);
+  align-items: start;
 }
 
 .media-thumb-wrap {
   position: relative;
   display: block;
-  width: 112px;
-  height: 84px;
+  width: 128px;
+  height: 96px;
   background: var(--void);
   border: 1px solid var(--hair-strong);
 }
@@ -1509,9 +1562,13 @@ input {
 
 .media-title {
   font-family: var(--serif);
-  font-size: 14.5px;
-  line-height: 1.45;
+  font-size: 15.5px;
+  line-height: 1.4;
   color: var(--paper);
+}
+
+.media-card:hover .media-title {
+  color: var(--ember-bright);
 }
 
 .media-caption {
@@ -1521,7 +1578,7 @@ input {
 }
 
 .media-note {
-  margin: var(--s3) 0 0;
+  margin: var(--s4) 0 0;
   font-family: var(--mono);
   font-size: 10.5px;
   letter-spacing: 0.04em;
@@ -1558,20 +1615,38 @@ input {
   color: var(--paper);
 }
 
-/* Narrow windows tighten the evidence grid rather than hiding it. */
-
 @media (max-width: 1180px) {
-  .media {
-    padding: var(--s4) var(--s3);
+  .intro {
+    margin: 0 calc(-1 * var(--s5)) var(--s5);
+  }
+
+  .hero-title {
+    font-size: 34px;
+  }
+
+  .hero-caption {
+    padding-left: var(--s5);
+    padding-right: var(--s5);
+  }
+
+  /* The write path has to stay reachable at the smallest allowed window, so
+     the tall chrome yields before the content does. */
+  .viewport {
+    height: 300px;
   }
 
   .media-card {
-    grid-template-columns: 88px 1fr;
+    grid-template-columns: 96px 1fr;
+    gap: var(--s3);
   }
 
   .media-thumb-wrap {
-    width: 88px;
-    height: 66px;
+    width: 96px;
+    height: 72px;
+  }
+
+  .media-note {
+    display: none;
   }
 }
 
