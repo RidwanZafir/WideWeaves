@@ -1476,14 +1476,34 @@ input {
   color: var(--warm-faint);
 }
 
-/* The rail says which records carry footage, so nobody has to hunt. */
+/* The rail says which records carry footage, so nobody has to hunt.
+   Demoted on purpose: nearly every row carries one, so a loud tag would be
+   noise. The evidence block in the record carries the emphasis instead. */
 .row-media {
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ember);
+  color: var(--steel-dim);
   white-space: nowrap;
+}
+
+.row-right {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-left: auto;
+}
+
+/* Links are ember, not browser-default blue: the accent is the only colour
+   that carries meaning, and an unstyled link is off-palette by accident. */
+.entry-sub a {
+  color: var(--ember-bright);
+  text-underline-offset: 2px;
+}
+
+.entry-sub a:hover {
+  color: var(--paper);
 }
 
 /* Narrow windows tighten the evidence grid rather than hiding it. */

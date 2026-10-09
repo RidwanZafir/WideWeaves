@@ -191,7 +191,7 @@
       '<div class="intro">' +
       "<h2>Everything here is still out there.</h2>" +
       '<p class="lede">Five records of hardware we left on the Moon and Mars. ' +
-      "Its colour is how well we know it; its shape is what it is.</p>" +
+      "Colour is certainty; shape is kind.</p>" +
       '<div class="map">' + map + "</div>" +
       '<dl class="stakes">' + stakes + "</dl>" +
       '<p class="intro-hint">Two ways in: the map above, the index on the left. ' +
@@ -508,6 +508,7 @@
           "</span>" +
           '<span class="row-meta">' +
           '<span class="row-world">' + escapeHtml(o.worldName || "") + "</span>" +
+          '<span class="row-right">' +
           (mediaTag ? '<span class="row-media">' + mediaTag + "</span>" : "") +
           '<span class="row-era">' + escapeHtml(eraYear) + "</span>" +
           "</span>" +
@@ -545,9 +546,12 @@
       refs.readout.textContent = "";
       return;
     }
+    // The rail count already says how many are shown; the masthead says how
+    // big the archive is. Two identical numbers would be a repeated KPI.
     try {
       var total = await bridge.objectCount();
-      refs.readout.textContent = total + " records";
+      var worlds = state.worlds && state.worlds.length ? state.worlds.length : (await bridge.worlds()).length;
+      refs.readout.textContent = total + " records · " + worlds + " worlds";
     } catch (e) {
       refs.readout.textContent = "";
     }

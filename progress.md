@@ -637,3 +637,26 @@ media flags); package contract + asar check extended to the 4 thumbnails.
 pattern and Surveyor records were eyeballed — evidence block, play marks,
 rail tags, clean masthead. Docs (README table, TALK_TRACK figures, SUBMISSION
 demo) updated to match.
+
+---
+
+## Session 8 — Navigation calibration with Kole Jain + design-methodology
+
+Ran the Kole Jain loop (intent → precedent → edges → differentiate → one tier
+up → de-vibe-code) on top of the methodology's structural diagnosis. Honest
+outcome: no new intent exists, so no restructure — the IA (map front door,
+rail index, record story, provenance evidence+action) is the conventional
+archive pattern and stays. The pass was calibration, five surgical changes:
+
+1. **Rail media tags demoted** from ember to dim. Five tagged rows made the
+   accent noise; emphasis is relative, and the evidence block now carries it.
+2. **Row meta restored to two edges** (world left, media+era right group) —
+   the receipt principle; the floating middle tag broke edge cleanliness.
+3. **Masthead readout de-duplicated**: was "5 records", identical to the rail
+   count — a repeated KPI. Now "5 records · 2 worlds" (archive size vs view).
+4. **Links rescued from browser-default blue** (the one de-vibe tell left):
+   `.entry-sub a` in ember-bright, paper on hover.
+5. **Intro lede trimmed** to ~16 words: "Colour is certainty; shape is kind."
+
+No harness, schema, or count changes. Full suite + package:prove green,
+captures regenerated, intro eyeballed. Committed as session 8.
