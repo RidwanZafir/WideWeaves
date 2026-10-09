@@ -93,7 +93,9 @@ function registerHandlers({ ipcMain }) {
           o.id, o.name, o.sort_title, o.summary,
           o.mark,
           o.era, o.mission_code, o.year, o.certainty, o.status,
-          o.location_note, w.name AS world_name, w.code AS world_code
+          o.location_note, w.name AS world_name, w.code AS world_code,
+          EXISTS(SELECT 1 FROM sources s WHERE s.object_id = o.id AND s.nasa_url LIKE '%youtube.com%') AS has_video,
+          EXISTS(SELECT 1 FROM sources s WHERE s.object_id = o.id AND s.nasa_id LIKE 'PIA%') AS has_photo
         FROM objects o
         JOIN worlds w ON w.id = o.world_id
         ${whereSql}
@@ -130,7 +132,11 @@ function registerHandlers({ ipcMain }) {
       worldName: r[11],
       // The world's stable code travels with the row so the renderer can pick
       // that world's ground without parsing a display name.
-      worldCode: r[12]
+      worldCode: r[12],
+      // Media flags so the rail can say which records carry footage before
+      // they are opened. LIKE patterns are constants, not user input.
+      hasVideo: r[13] === 1,
+      hasPhoto: r[14] === 1
     }));
   });
 

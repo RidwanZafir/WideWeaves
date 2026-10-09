@@ -65,7 +65,7 @@ evidence are different materials and should not look alike.*
 
 **What is real:** the schema, the uncertainty model, the workflow, the write
 path, the persistence, the locked-down runtime, a packaged Windows build you can
-run without installing anything, and 302 automated checks across eight harnesses.
+run without installing anything, and 317 automated checks across eight harnesses.
 
 **What is curated:** five pilot objects across two worlds, with sources and
 stakeholders written as representative entries. This is a demonstration dataset,
@@ -167,18 +167,18 @@ archive, so real data would simply be loaded and left alone.
 
 ## Verification — what was actually run
 
-Eight harnesses, all green on the final revision, zero failures — 302 checks:
+Eight harnesses, all green on the final revision, zero failures — 317 checks:
 
 | Harness | Scope | Result |
 |---|---|---|
 | [`scripts/audit.js`](scripts/audit.js) | The trust boundary: LIKE wildcards, argument validation, orphan writes, foreign-key enforcement, the field budget | **42 checks pass**, exit 0 |
 | [`scripts/audit-window.js`](scripts/audit-window.js) | A real window: keyboard focus after a redraw, the failure notice, the new surfaces' contrast, and whether the archive-closed screen is reachable at all | **18 checks pass**, exit 0 |
-| [`scripts/verify.js`](scripts/verify.js) | Data layer + full IPC contract, headless, isolated temp DB | **36 checks pass**, exit 0 |
+| [`scripts/verify.js`](scripts/verify.js) | Data layer + full IPC contract, headless, isolated temp DB | **39 checks pass**, exit 0 |
 | [`scripts/render-check.js`](scripts/render-check.js) | Real Electron window, real preload + CSP, live DOM | **72 checks pass**, exit 0 |
 | [`scripts/check-assets.js`](scripts/check-assets.js) | Decodes all eleven shipped sprites; asserts the stencil and tile contract | **44 checks pass**, exit 0 |
-| [`scripts/package.js`](scripts/package.js) | Reads the built archive back: runtime files present, sprites and NASA images present, no development artifact, and `dist/` byte-identical to the verified build | **68 checks pass**, exit 0 |
+| [`scripts/package.js`](scripts/package.js) | Reads the built archive back: runtime files present, sprites, NASA photos and YouTube thumbnails present, no development artifact, and `dist/` byte-identical to the verified build | **76 checks pass**, exit 0 |
 | [`scripts/package.js --boot`](scripts/package.js) | Runs the real `.exe` against a throwaway `--user-data-dir`: window titled, sql.js loads its wasm from inside the archive, every table seeded | **7 checks pass**, exit 0 |
-| [`scripts/asar-asset-check.js`](scripts/asar-asset-check.js) | Loads the packaged UI in a window; all eleven sprites arrive out of the asar at true 1:1 size, both NASA images load, a mask resolves into the archive | **15 checks pass**, exit 0 |
+| [`scripts/asar-asset-check.js`](scripts/asar-asset-check.js) | Loads the packaged UI in a window; all eleven sprites arrive out of the asar at true 1:1 size, both NASA photos and all four video thumbnails load, a mask resolves into the archive | **19 checks pass**, exit 0 |
 
 The render harness is the one that matters for a UI claim: it builds the window
 with [src/window.js](src/window.js) — the same factory `main.js` ships — loads

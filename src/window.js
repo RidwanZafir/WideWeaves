@@ -50,11 +50,11 @@ function createWindow(options = {}) {
     event.preventDefault();
   });
 
-  // NASA citations are real https links. The archive itself stays offline
+  // NASA/ESA citations are real https links. The archive itself stays offline
   // (connect-src 'none'), so outside navigation never happens inside the
   // instrument: it opens in the system browser and the app window stays put.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https:\/\/(images\.nasa\.gov|science\.nasa\.gov|photojournal\.jpl\.nasa\.gov|www\.nasa\.gov)\//.test(url)) {
+    if (/^https:\/\/(images\.nasa\.gov|science\.nasa\.gov|photojournal\.jpl\.nasa\.gov|www\.nasa\.gov|www\.youtube\.com|youtu\.be|www\.esa\.int|esa\.int)\//.test(url)) {
       shell.openExternal(url);
     }
     return { action: "deny" };

@@ -586,3 +586,54 @@ public repo, record the 3-minute demo video, paste the project page.
   would trim ~2 MB off the asar with no visible difference at 72px.
 - `TALK_TRACK.md` history sections still narrate past sessions as they stood;
   only the summary figures were updated.
+
+---
+
+## Session 7 — Real videos, one navigation model, UI that isn't vibeslop
+
+The user looked at the app and said three things: where are the videos, the
+navigation is confusing, the UI looks vibecoded — and pasted the
+design-methodology skill. Diagnosis before decoration:
+
+- **Discoverability failure (the actual bug):** videos existed nowhere. Only
+  3/5 records had any media, served as a squeezed masthead card.
+- **Frankenstein navigation:** map stakes and rail rows both opened records
+  with nothing saying so; the masthead did four jobs (title, media card,
+  filters, search).
+- **Shouting match in the masthead:** title + photo card + chips + search all
+  competed for primary weight.
+
+### Media: four official videos, verified by search, vendored locally
+
+| Record | Video | Source |
+|---|---|---|
+| Apollo 11 descent stage | Restored Apollo 11 moonwalk (`S9HdPi9Ikhk`) | Official NASA channel |
+| Luna 2 | Tour of the Moon in 4K (`nr5Pj6GQL2o`) | NASA Goddard; labelled as context, since no Luna 2 footage can exist |
+| Schiaparelli | Descent in real time (`C43KXGQuUuY`) | ESA visualization |
+| Mars landing failures | Seven Minutes of Terror (`Ki_Af_o9Q9s`) | NASA JPL |
+
+Surveyor 1 deliberately got no video — no official NASA video for that
+hardware was found, and inventing one would be the false-precision move the
+app argues against. Thumbnails vendored (`dist/assets/yt-*.jpg`, 20–42 KB,
+JPEG magic bytes checked). Videos stored as `kind: "Video"` source rows, so no
+schema migration was needed; thumbs derive from the `v=` param, PIA photos
+from the existing map. `setWindowOpenHandler` allowlist extended to
+youtube.com / youtu.be / esa.int.
+
+### Navigation: one model, stated in the UI
+
+- Media moved into the record reading flow (**The evidence** block after the
+  lede) — the masthead is back to one job: identity + find.
+- Rail rows carry `photo` / `film` tags from new `has_video` / `has_photo`
+  flags on the list query (constant LIKE patterns, not user input).
+- Intro hint now reads: "Two ways in: the map above, the index on the left."
+- Sources panel links say what they are: "Watch on YouTube" vs "NASA PIA…".
+
+### Verification
+
+`npm test` all green; `verify.js` gained 3 checks (video attached, per-record
+media flags); package contract + asar check extended to the 4 thumbnails.
+**317 checks, eight suites, zero failures.** 8 captures regenerated; the Mars
+pattern and Surveyor records were eyeballed — evidence block, play marks,
+rail tags, clean masthead. Docs (README table, TALK_TRACK figures, SUBMISSION
+demo) updated to match.

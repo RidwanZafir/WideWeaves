@@ -50,14 +50,18 @@ No gradients, no rounded corners anywhere — asserted by tests, not by taste.
 
 ## NASA data used
 
-Pilot records cite real NASA Photojournal / Image Library material, vendored
-locally so the offline archive stays offline:
+Every record carries a **"The evidence"** block in the reading flow — photos
+and film with NASA's own captions, thumbnail images vendored locally so the
+offline archive stays offline. Links open in the system browser. Rail rows are
+tagged `photo` / `film` so footage is visible before a record is opened.
 
-| Record | NASA asset | Used as |
+| Record | Photo | Film |
 |---|---|---|
-| Surveyor 1 | **PIA12910** — Surveyor 1 on Oceanus Procellarum, LRO NAC (NASA/GSFC/ASU) | Thumbnail + caption + link to `https://images.nasa.gov/details-PIA12910` |
-| Schiaparelli EDM lander | **PIA21131** — Schiaparelli impact site, MRO HiRISE | Caption + link to `https://images.nasa.gov/details-PIA21131` |
-| Mars landing failures (category) | **PIA21131** (same) | Caption + link |
+| Surveyor 1 | **PIA12910** — Surveyor 1 on Oceanus Procellarum, LRO NAC (NASA/GSFC/ASU). `https://images.nasa.gov/details-PIA12910` | — (no official NASA video for this hardware exists; none invented) |
+| Apollo 11 descent stage | — | **Restored Apollo 11 moonwalk**, official NASA channel. `https://www.youtube.com/watch?v=S9HdPi9Ikhk` |
+| Luna 2 | — | **Tour of the Moon in 4K**, NASA Goddard LRO visualization, honestly labelled as lunar context — no footage of Luna 2 can exist. `https://www.youtube.com/watch?v=nr5Pj6GQL2o` |
+| Schiaparelli EDM lander | **PIA21131** — impact site, MRO HiRISE. `https://images.nasa.gov/details-PIA21131` | **Schiaparelli's descent in real time**, ESA visualization. `https://www.youtube.com/watch?v=C43KXGQuUuY` |
+| Mars landing failures | **PIA21131** (same) | **Seven Minutes of Terror**, NASA JPL Curiosity EDL. `https://www.youtube.com/watch?v=Ki_Af_o9Q9s` |
 
 Credits: NASA/JPL-Caltech, NASA/GSFC/Arizona State University (LROC),
 NASA/JPL/University of Arizona (HiRISE). Images are used as cited references
@@ -71,21 +75,21 @@ npm run package     # repack from the allowlist + assert the artifact
 npm run package:prove  # verify-only + boot the real .exe + asar asset check
 ```
 
-302 automated checks across eight harnesses, zero failures. The packaged
+317 automated checks across eight harnesses, zero failures. The packaged
 `dist/` is asserted byte-identical to the verified build, and the real
 executable is launched to confirm it comes up, seeds its archive, and serves
 every sprite and NASA image out of the archive at true size.
 
 | Harness | Scope | Checks |
 |---|---|---|
-| `scripts/verify.js` | Data layer + full IPC contract, headless | 36 |
+| `scripts/verify.js` | Data layer + full IPC contract, headless | 39 |
 | `scripts/check-assets.js` | PNG stencil/tile contract for all 11 sprites (`--art` prints them as ASCII) | 44 |
 | `scripts/audit.js` | Trust boundary: LIKE wildcards, validation, orphans, foreign keys, field budget, migration | 42 |
 | `scripts/audit-window.js` | Real window: keyboard focus, failure notice, flat surfaces, boot-failure screen | 18 |
 | `scripts/render-check.js` | Real window: DOM, CSP, pixel contract, workflow, persistence, narrow window | 72 |
-| `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 68 |
+| `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 76 |
 | `scripts/package.js --boot` | Real `.exe` boots, seeds every table, window titled | 7 |
-| `scripts/asar-asset-check.js` | All sprites + NASA images load out of the asar | 15 |
+| `scripts/asar-asset-check.js` | All sprites + NASA/YouTube images load out of the asar | 19 |
 
 Design review captures: `shots/contact-sheet.html` (8 rendered states).
 

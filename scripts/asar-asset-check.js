@@ -49,7 +49,11 @@ const SPRITES = {
 // (connect-src 'none'). No exact-size contract — just has to load.
 const NASA_IMAGES = [
   "assets/nasa-PIA12910.jpg",
-  "assets/nasa-PIA21131.jpg"
+  "assets/nasa-PIA21131.jpg",
+  "assets/yt-S9HdPi9Ikhk.jpg",
+  "assets/yt-nr5Pj6GQL2o.jpg",
+  "assets/yt-C43KXGQuUuY.jpg",
+  "assets/yt-Ki_Af_o9Q9s.jpg"
 ];
 
 const results = [];

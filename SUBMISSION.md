@@ -41,10 +41,11 @@ and **no coordination channel** (a next-actions queue per record).
 
 1. Launch `release/abandoned-but-not-forgotten-win32-x64/abandoned-but-not-forgotten.exe`.
    Two pixel ground strips, five stakes — colour is certainty, shape is kind.
-2. Click **Surveyor 1**: the healthy record. Read the lesson, note the NASA
-   PIA12910 card with real LRO imagery.
-3. Click **Schiaparelli**: "No other tool in this space would write that
-   sentence. Most would invent a coordinate."
+2. Click **Surveyor 1**: the healthy record. Read the lesson, note **The
+   evidence** block with the real LRO photo (PIA12910). Rail rows are tagged
+   `photo` / `film` so footage is visible before opening.
+3. Click **Schiaparelli**: photo plus the ESA descent film. "No other tool in
+   this space would write that sentence. Most would invent a coordinate."
 4. Type `collision` in search: lands on Luna 2 via its *lesson*.
 5. Filter to Mars: the open record stays, the rail explains why.
 6. File a next action on Surveyor 1, quit, reopen — still there. The dent.

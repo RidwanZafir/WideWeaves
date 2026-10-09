@@ -135,10 +135,15 @@ async function main() {
   const detail = call("archive:object", all[0].id);
   check("detail returns a record", !!detail && detail.id === all[0].id, JSON.stringify(detail && detail.id));
   check("detail has all narrative fields", !!(detail.whatIs && detail.whyAbandoned && detail.lesson && detail.statusNote && detail.locationNote && detail.certaintyNote), "one or more missing");
-  check("detail carries sources", detail.sources.length === 2, "got " + detail.sources.length);
+  check("detail carries sources", detail.sources.length === 3, "got " + detail.sources.length);
   check("detail carries stakeholders", detail.stakeholders.length === 2, "got " + detail.stakeholders.length);
   check("detail carries nextActions", detail.nextActions.length === 1, "got " + detail.nextActions.length);
   check("source shape", detail.sources[0].kind && detail.sources[0].title, JSON.stringify(detail.sources[0]));
+  const video = detail.sources.find((s) => s.kind === "Video");
+  check("a video source is attached", !!video && /youtube\.com\/watch\?v=/.test(video.nasaUrl || ""), JSON.stringify(video));
+  const flagged = call("archive:objects", {});
+  check("the list flags media per record", flagged.every((o) => typeof o.hasVideo === "boolean" && typeof o.hasPhoto === "boolean"), JSON.stringify(flagged.map((o) => [o.name, o.hasVideo, o.hasPhoto])));
+  check("Luna 2 flags its footage", flagged.find((o) => o.name === "Luna 2").hasVideo === true, "hasVideo");
   check("stakeholder shape", detail.stakeholders[0].role && detail.stakeholders[0].name, JSON.stringify(detail.stakeholders[0]));
 
   const missing = call("archive:object", 99999);

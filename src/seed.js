@@ -72,7 +72,8 @@ const OBJECTS = [
     sources: [
       { kind: "Mission record", title: "Apollo 11 mission report", reference: "Public mission archive" },
       { kind: "Policy document", title: "Off-world heritage protection guidance", reference: "Heritage policy discussion" },
-      { kind: "Image archive", title: "Surface photography from the landing", reference: "Public image collection" }
+      { kind: "Image archive", title: "Surface photography from the landing", reference: "Public image collection" },
+      { kind: "Video", title: "Restored Apollo 11 moonwalk — original EVA footage", reference: "NASA official channel · full mission video", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=S9HdPi9Ikhk", nasaCaption: "Original mission video as aired in July 1969: Armstrong and Aldrin's moonwalk." }
     ],
     next_action: {
       action: "Record the site boundary as a protected-consideration zone",
@@ -103,7 +104,8 @@ const OBJECTS = [
     ],
     sources: [
       { kind: "Mission record", title: "Luna 2 launch and impact summary", reference: "Public mission archive" },
-      { kind: "Commemoration", title: "Marker left by a later mission at the impact region", reference: "Commemoration record" }
+      { kind: "Commemoration", title: "Marker left by a later mission at the impact region", reference: "Commemoration record" },
+      { kind: "Video", title: "Tour of the Moon in 4K", reference: "NASA Goddard · LRO visualization", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=nr5Pj6GQL2o", nasaCaption: "Lunar context, honestly labelled: no footage of Luna 2 can exist — it was destroyed on impact. This LRO tour shows the world it reached." }
     ],
     next_action: {
       action: "Mark the location as approximate and say why",
@@ -136,7 +138,8 @@ const OBJECTS = [
     ],
     sources: [
       { kind: "Mission record", title: "ExoMars 2016 descent anomaly investigation", reference: "Public investigation summary" },
-      { kind: "Image archive", title: "Orbital imagery of the candidate impact region", reference: "NASA Image and Video Library / HiRISE", nasaId: "PIA21131", nasaUrl: "https://images.nasa.gov/details-PIA21131", nasaCaption: "This Oct. 25, 2016, image shows the area where the European Space Agency's Schiaparelli test lander reached the surface of Mars, viewed by NASA's Mars Reconnaissance Orbiter." }
+      { kind: "Image archive", title: "Orbital imagery of the candidate impact region", reference: "NASA Image and Video Library / HiRISE", nasaId: "PIA21131", nasaUrl: "https://images.nasa.gov/details-PIA21131", nasaCaption: "This Oct. 25, 2016, image shows the area where the European Space Agency's Schiaparelli test lander reached the surface of Mars, viewed by NASA's Mars Reconnaissance Orbiter." },
+      { kind: "Video", title: "Schiaparelli's descent to Mars in real time", reference: "ESA · descent visualization", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=C43KXGQuUuY", nasaCaption: "The six-minute descent as planned. The final stages did not happen this way." }
     ],
     next_action: {
       action: "Add the anomaly findings as a linked lesson",
@@ -171,7 +174,8 @@ const OBJECTS = [
     sources: [
       { kind: "Survey", title: "Compiled inventory of Mars landing attempts", reference: "Public mission records" },
       { kind: "Analysis", title: "Reconstruction of descent sequences for failed attempts", reference: "Published analysis" },
-      { kind: "Image archive", title: "Candidate impact site imaged from orbit", reference: "NASA Image and Video Library / HiRISE", nasaId: "PIA21131", nasaUrl: "https://images.nasa.gov/details-PIA21131", nasaCaption: "This Oct. 25, 2016, image shows the area where the European Space Agency's Schiaparelli test lander reached the surface of Mars, viewed by NASA's Mars Reconnaissance Orbiter." }
+      { kind: "Image archive", title: "Candidate impact site imaged from orbit", reference: "NASA Image and Video Library / HiRISE", nasaId: "PIA21131", nasaUrl: "https://images.nasa.gov/details-PIA21131", nasaCaption: "This Oct. 25, 2016, image shows the area where the European Space Agency's Schiaparelli test lander reached the surface of Mars, viewed by NASA's Mars Reconnaissance Orbiter." },
+      { kind: "Video", title: "Seven Minutes of Terror", reference: "NASA JPL · Curiosity EDL", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=Ki_Af_o9Q9s", nasaCaption: "Why Mars landings fail so often: seven minutes from atmosphere to ground, no help from Earth." }
     ],
     next_action: {
       action: "Split this grouping into one record per mission",

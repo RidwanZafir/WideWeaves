@@ -35,10 +35,6 @@
     /* A failure the reader has to see. Kept separate from `record` so a record
        that will not open does not also wipe the record already on screen. */
     notice: "",
-    /* One real NASA image that supports the open record, if the archive has one.
-       Kept separate from the prose so the record does not say things the photo
-       did not say. */
-    nasa: null,
     /* A failed boot. While set, the workspace shows the failure instead of an
        empty shell — an error screen that cannot be reached is worse than none. */
     fatal: "",
@@ -56,12 +52,7 @@
     count: document.getElementById("rail-count"),
     readout: document.getElementById("readout"),
     record: document.getElementById("record"),
-    provenance: document.getElementById("provenance"),
-    nasaCard: document.getElementById("nasa-card"),
-    nasaThumb: document.getElementById("nasa-card-thumb"),
-    nasaId: document.getElementById("nasa-card-id"),
-    nasaCaption: document.getElementById("nasa-card-caption"),
-    nasaSource: document.getElementById("nasa-card-source")
+    provenance: document.getElementById("provenance")
   };
 
   var escapeHtml = function (s) {
@@ -88,48 +79,65 @@
     return await bridge.objects(opts || {});
   }
 
-  /* ---- NASA card (masthead slot; stable across record renders) ---- */
+  /* ---- media: the evidence, in the reading flow ----
+     Photos and film live with the story they support — not in the masthead,
+     which has one job (find things). Thumbs are vendored locally so the
+     offline archive stays offline; the links open outside the app. */
 
-  function renderNasaCard() {
-    if (!refs.nasaCard) return;
-
-    if (!state.nasa) {
-      refs.nasaCard.hidden = true;
-      return;
-    }
-
-    refs.nasaCard.hidden = false;
-    // Offline-first: the thumbnail is a local vendored file, so the card
-    // works with connect-src 'none'.
-    if (state.nasa.thumb) {
-      refs.nasaThumb.hidden = false;
-      refs.nasaThumb.src = state.nasa.thumb;
-      refs.nasaThumb.alt = state.nasa.caption;
-    } else {
-      refs.nasaThumb.hidden = true;
-      refs.nasaThumb.removeAttribute("src");
-    }
-    refs.nasaId.textContent = "NASA " + state.nasa.id;
-    refs.nasaCaption.textContent = state.nasa.caption;
-    refs.nasaSource.textContent = state.nasa.source;
-    refs.nasaSource.title = state.nasa.url;
+  function isVideoSource(src) {
+    return /youtube\.com\/watch/.test(src.nasaUrl || "");
   }
 
-  function nasaForRecord(record) {
+  function thumbFor(src) {
+    var m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(src.nasaUrl || "");
+    if (m) return "assets/yt-" + m[1] + ".jpg";
+    return NASA_THUMBS[src.nasaId] || null;
+  }
+
+  function mediaForRecord(record) {
+    var out = [];
     var sources = (record && record.sources) || [];
     for (var i = 0; i < sources.length; i++) {
       var src = sources[i];
-      if (src.nasaId && src.nasaUrl) {
-        return {
-          id: src.nasaId,
-          url: src.nasaUrl,
-          caption: src.nasaCaption || src.title || "",
-          source: src.reference + (src.nasaId ? " · NASA " + src.nasaId : ""),
-          thumb: NASA_THUMBS[src.nasaId] || null
-        };
-      }
+      if (!src.nasaUrl) continue;
+      var thumb = thumbFor(src);
+      if (!thumb) continue;
+      out.push({
+        video: isVideoSource(src),
+        url: src.nasaUrl,
+        thumb: thumb,
+        kind: isVideoSource(src) ? ("Film · " + src.reference) : ("Photo · NASA " + src.nasaId),
+        title: src.title,
+        caption: src.nasaCaption || ""
+      });
     }
-    return null;
+    return out;
+  }
+
+  function renderMedia(media) {
+    if (!media.length) return "";
+    var cards = media.map(function (m) {
+      return (
+        '<a class="media-card' + (m.video ? " media-card--video" : "") + '"' +
+        ' href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener">' +
+        '<span class="media-thumb-wrap">' +
+        '<img class="media-thumb" src="' + escapeHtml(m.thumb) + '" alt="" loading="lazy" />' +
+        (m.video ? '<span class="media-play" aria-hidden="true"></span>' : "") +
+        "</span>" +
+        '<span class="media-body">' +
+        '<span class="media-kind">' + escapeHtml(m.kind) + "</span>" +
+        '<span class="media-title">' + escapeHtml(m.title) + "</span>" +
+        (m.caption ? '<span class="media-caption">' + escapeHtml(m.caption) + "</span>" : "") +
+        "</span></a>"
+      );
+    }).join("");
+    return (
+      '<div class="media">' +
+      '<div class="media-label">The evidence</div>' +
+      '<div class="media-grid">' + cards + "</div>" +
+      '<p class="media-note">Opens outside the archive, in your browser.</p>' +
+      "</div>"
+    );
   }
 
   /* ---- intro: the archive as a pixel landscape ---- */
@@ -186,7 +194,8 @@
       "Its colour is how well we know it; its shape is what it is.</p>" +
       '<div class="map">' + map + "</div>" +
       '<dl class="stakes">' + stakes + "</dl>" +
-      '<p class="intro-hint"><span class="k">/</span> jumps to search. Every mark opens its record.</p>' +
+      '<p class="intro-hint">Two ways in: the map above, the index on the left. ' +
+      '<span class="k">/</span> jumps to search. Every mark opens its record.</p>' +
       "</div>";
   }
 
@@ -280,6 +289,7 @@
       html += '<p class="lede">' + escapeHtml(r.summary) + "</p>";
     }
 
+    html += renderMedia(mediaForRecord(r));
     html += blocks + "</div>";
 
     refs.record.innerHTML = html;
@@ -327,15 +337,19 @@
       var srcs = "";
       for (var i = 0; i < sources.length; i++) {
         var src = sources[i];
-        var nasa = src.nasaId && src.nasaUrl
-          ? ' · <a href="' + escapeHtml(src.nasaUrl) +
-            '" target="_blank" rel="noopener">NASA ' + escapeHtml(src.nasaId) + "</a>"
-          : "";
+        var ext = "";
+        if (src.nasaUrl && isVideoSource(src)) {
+          ext = ' · <a href="' + escapeHtml(src.nasaUrl) +
+            '" target="_blank" rel="noopener">Watch on YouTube</a>';
+        } else if (src.nasaId && src.nasaUrl) {
+          ext = ' · <a href="' + escapeHtml(src.nasaUrl) +
+            '" target="_blank" rel="noopener">NASA ' + escapeHtml(src.nasaId) + "</a>";
+        }
         srcs +=
           '<div class="entry">' +
           '<span class="entry-kind">' + escapeHtml(src.kind) + "</span>" +
           '<p class="entry-title">' + escapeHtml(src.title) + "</p>" +
-          '<p class="entry-sub">' + escapeHtml(src.reference) + nasa + "</p></div>";
+          '<p class="entry-sub">' + escapeHtml(src.reference) + ext + "</p></div>";
       }
       panels +=
         '<div class="panel">' +
@@ -479,6 +493,10 @@
         var certainty = o.certainty || "unknown";
         var eraYear = o.era || "";
         if (o.year != null) eraYear += " · " + String(o.year);
+        // One glance says which records carry footage, so nobody has to hunt.
+        var mediaTag = o.hasVideo && o.hasPhoto ? "photo · film"
+          : o.hasVideo ? "film"
+          : o.hasPhoto ? "photo" : "";
         html +=
           '<li><button type="button" class="row" data-id="' + o.id + '"' +
           (o.id === state.selectedId ? ' aria-current="true"' : "") +
@@ -490,6 +508,7 @@
           "</span>" +
           '<span class="row-meta">' +
           '<span class="row-world">' + escapeHtml(o.worldName || "") + "</span>" +
+          (mediaTag ? '<span class="row-media">' + mediaTag + "</span>" : "") +
           '<span class="row-era">' + escapeHtml(eraYear) + "</span>" +
           "</span>" +
           "</button></li>";
@@ -545,7 +564,6 @@
     renderRailKey();
     renderRecord();
     renderProvenance();
-    renderNasaCard();
     renderRail();
     renderCount();
     await renderReadout();
@@ -559,7 +577,6 @@
     if (refs.count) refs.count.textContent = "unavailable";
     if (refs.readout) refs.readout.textContent = "";
     if (refs.provenance) refs.provenance.innerHTML = "";
-    if (refs.nasaCard) refs.nasaCard.hidden = true;
     renderFatal();
     markBooted();
   }
@@ -586,7 +603,6 @@
 
     state.notice = "";
     state.record = detail;
-    state.nasa = nasaForRecord(detail);
     await render();
 
     if (keyboard && refs.record) {
