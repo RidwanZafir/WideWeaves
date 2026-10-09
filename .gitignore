@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+
+# generated archive state (lives in userData at runtime; never commit)
+data/
+
+# packaged builds
+release/
+
+# generated design captures
+shots/
+
+# OS noise
+Thumbs.db
+.DS_Store

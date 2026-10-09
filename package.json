@@ -1,0 +1,26 @@
+{
+  "name": "abandoned-but-not-forgotten",
+  "version": "1.0.0",
+  "description": "A desktop workspace for NASA's abandoned hardware on the Moon and Mars — memory as a real, preservable thing.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "package": "node scripts/package.js",
+    "package:check": "node scripts/package.js --verify-only",
+    "package:boot": "node scripts/package.js --boot",
+    "package:assets": "electron scripts/asar-asset-check.js",
+    "package:prove": "npm run package:check && npm run package:boot && npm run package:assets",
+    "preview": "node scripts/preview-server.js",
+    "audit": "node scripts/audit.js",
+    "audit:window": "electron scripts/audit-window.js",
+    "test": "npm run audit && npm run audit:window && node scripts/verify.js && node scripts/check-assets.js && electron scripts/render-check.js"
+  },
+  "dependencies": {
+    "electron": "^44.6.0",
+    "sql.js": "^1.14.2"
+  },
+  "devDependencies": {
+    "electron-packager": "^17.1.2"
+  }
+}

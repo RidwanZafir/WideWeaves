@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Local-only. No remote origins are permitted anywhere in the policy. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; font-src 'self' file:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';"
+    />
+    <meta name="color-scheme" content="dark" />
+    <title>Abandoned but Not Forgotten</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- data-boot paints the moment before SQLite has answered; app.js drops it
+         on the first real render (see the boot state in styles.css). -->
+    <div class="app" data-boot="pending">
+      <header class="masthead">
+        <div class="masthead-id">
+          <!-- A site plan, not a logo: a horizon with two things left standing on
+               it. Drawn in Aseprite (assets-src/site-plan.aseprite), exported to
+               dist/assets/, and tinted here through a CSS mask. -->
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <h1>Abandoned but Not Forgotten</h1>            <p class="tagline">A working record of what we left on the Moon and Mars</p>
+            
+            <!-- A pixel record is not a gallery; it is a place where the record can
+                 point at the one image that actually supports its story, with the
+                 caption NASA gave it and the source it came from. -->
+            <div class="nasa-card" id="nasa-card" hidden>
+              <img class="nasa-card-thumb" id="nasa-card-thumb" alt="" />
+              <div class="nasa-card-body">
+                <span class="nasa-card-id" id="nasa-card-id"></span>
+                <p class="nasa-card-caption" id="nasa-card-caption"></p>
+                <p class="nasa-card-source" id="nasa-card-source"></p>
+              </div>
+            </div>
+            
+            <!-- One real screenshot NASA published of the hardware still out there,
+                 not a patterned placeholder. -->
+
+          </div>
+        </div>
+
+        <div class="masthead-tools">
+          <!-- The archive's own size. The rail count reports the current view. -->
+          <span class="readout" id="readout"></span>
+          <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
+          <label class="search">              <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="1" width="4" height="1.5" fill="currentColor" />
+                <rect x="1" y="6" width="1.5" height="4" fill="currentColor" />
+                <circle cx="8" cy="9" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                <path d="M10.4 10.4L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+              </svg>
+            </span>
+            <input
+              id="search"
+              type="search"
+              placeholder="Search records, missions, lessons"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search the archive"
+            />
+          </label>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="rail" aria-label="The archive">
+          <div class="rail-head">
+            <h2>The archive</h2>
+            <span class="rail-count" id="rail-count"></span>
+          </div>
+          <p class="rail-note" id="rail-note" hidden></p>
+          <ul class="record-list" id="record-list"></ul>
+          <p class="rail-empty" id="rail-empty" hidden>
+            <span class="rail-empty-title">Nothing matches that</span>
+            Clear the search, or widen the world filter. The archive itself is unchanged — this
+            is only the view.
+          </p>
+          <!-- A field guide, not a legend. The map's shapes are a private language
+               until the reader is taught them here; once taught, the map stops being
+               a wall of identical badges and starts saying what was actually left
+               behind. Five silhouettes, five words, then one line that teaches the
+               rule in plain English. -->
+          <div class="rail-key" id="rail-key"></div>
+          <p class="rail-foot" id="rail-foot" hidden>
+            <span class="rail-foot-label">Pixel record.</span>
+            Every mark on the map is one of these five. Colour says how well we know
+            it. Shape says what it is.
+          </p>
+        </aside>
+
+        <section class="record" id="record" aria-live="polite"></section>
+
+        <aside class="provenance" id="provenance" aria-label="Provenance and next actions"></aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
