@@ -92,6 +92,7 @@ const REQUIRED = [
   "/dist/index.html",
   "/dist/styles.css",
   "/dist/app.js",
+  "/dist/scene.bundle.js",
   "/dist/assets/cancel.png",
   "/dist/assets/dither.png",
   "/dist/assets/ground-mars.png",

@@ -873,6 +873,58 @@ input {
   color: var(--paper);
 }
 
+/* ---- the observation viewport ----
+   A Three.js surface you can look at: two strips of ground, five things left
+   standing on them, a low sun that leaves long shadows the way the LRO
+   captions describe. It draws into a fixed low-resolution target and blits up
+   with nearest-neighbour, so the picture is in the instrument's own pixel
+   language rather than smooth 3D. Hard edges, one hairline, no gradient. */
+
+.viewport {
+  position: relative;
+  height: 340px;
+  margin-bottom: var(--s5);
+  border: 1px solid var(--warm-hair);
+  background: var(--void);
+}
+
+.viewport[hidden] {
+  display: none;
+}
+
+.viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The blit is already nearest-neighbour; this keeps a browser-side rescale
+     from undoing it. */
+  image-rendering: pixelated;
+  cursor: grab;
+}
+
+.viewport canvas:active {
+  cursor: grabbing;
+}
+
+.viewport-note {
+  margin: calc(-1 * var(--s5)) 0 var(--s6);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
+}
+
+/* The 2D pixel map is the fallback, not a lesser mode. It carries the same
+   rows, the same certainty, the same five silhouettes. */
+.map-fallback {
+  margin-bottom: var(--s6);
+}
+
+.map-fallback[hidden] {
+  display: none;
+}
+
 /* ---- the map ----
    One row per world: a real Aseprite ground strip tiled across the column with
    the records standing on it as stakes. The marks are evenly spaced on purpose

@@ -43,10 +43,18 @@ A curator's workspace, not a gallery. Three columns:
 | **The record** (centre) | The object's life: what it is, **why it was abandoned**, what it taught, where it is now, how well we know that. |
 | **Provenance** (right) | Sources, who cares, and **what should happen next** — with a form that writes a real proposed action to SQLite. |
 
-The imagery is hand-drawn pixel art (Aseprite sources in `assets-src/`,
-shipped in `dist/assets/`): a masthead site plan, lunar and Martian ground
-strips, one silhouette per kind of thing left behind, and a dither grain.
-No gradients, no rounded corners anywhere — asserted by tests, not by taste.
+The front door is a **Three.js observation viewport**: two surfaces — lunar and
+Martian — generated from a fixed seed, with the five records planted on them as
+their real silhouettes. Drag to orbit, scroll to draw closer, click a mark to
+open its record. It renders into a fixed low-resolution target and blits up
+nearest-neighbour, so the 3D picture is in the instrument's own pixel language.
+The hand-drawn Aseprite pixel art (masthead site plan, dither grain, silhouette
+sprites) is unchanged, and **no gradient or rounded corner exists anywhere** —
+asserted by tests, not by taste.
+
+The 2D pixel map is the viewport's **fallback, not its inferior**: if WebGL is
+unavailable the map comes back automatically. Append `#no3d` to force it. Both
+surfaces read the same rows, so the picture cannot disagree with the data.
 
 ## NASA data used
 
@@ -75,7 +83,7 @@ npm run package     # repack from the allowlist + assert the artifact
 npm run package:prove  # verify-only + boot the real .exe + asar asset check
 ```
 
-317 automated checks across eight harnesses, zero failures. The packaged
+328 automated checks across eight harnesses, zero failures. The packaged
 `dist/` is asserted byte-identical to the verified build, and the real
 executable is launched to confirm it comes up, seeds its archive, and serves
 every sprite and NASA image out of the archive at true size.
@@ -86,7 +94,7 @@ every sprite and NASA image out of the archive at true size.
 | `scripts/check-assets.js` | PNG stencil/tile contract for all 11 sprites (`--art` prints them as ASCII) | 44 |
 | `scripts/audit.js` | Trust boundary: LIKE wildcards, validation, orphans, foreign keys, field budget, migration | 42 |
 | `scripts/audit-window.js` | Real window: keyboard focus, failure notice, flat surfaces, boot-failure screen | 18 |
-| `scripts/render-check.js` | Real window: DOM, CSP, pixel contract, workflow, persistence, narrow window | 72 |
+| `scripts/render-check.js` | Real window: DOM, CSP, pixel contract, workflow, persistence, narrow window, and the 3D viewport | 83 |
 | `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 76 |
 | `scripts/package.js --boot` | Real `.exe` boots, seeds every table, window titled | 7 |
 | `scripts/asar-asset-check.js` | All sprites + NASA/YouTube images load out of the asar | 19 |
@@ -106,6 +114,8 @@ dist/              # the shipped UI: index.html + styles.css + app.js + assets/
 assets-src/        # Aseprite sources for all 11 sprites
 scripts/           # verification harnesses + packager + preview server
 shots/             # rendered-state captures + contact sheet
+vendor/            # vendored three.js (bundled by esbuild, file:// safe)
+src/scene.js       # the Three.js observation viewport
 TALK_TRACK.md      # judge-facing talk track + 3-minute demo script
 ```
 

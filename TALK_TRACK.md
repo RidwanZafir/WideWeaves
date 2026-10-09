@@ -30,6 +30,13 @@ The app is the tool that fixes the first three and creates the fourth.
   cold, monospaced and instrument-like; the record column is warm, grain-textured
   and serif. That split is the product's own claim — cold canvas, warm record —
   so the layout says it before a word is read.
+- **The front door is a real 3D observation viewport, rendered in pixels.** Two
+  surfaces — lunar and Martian — built by a seeded noise generator, with the five
+  records planted on them as their own silhouettes. Drag to orbit, click a mark
+  to open it. Three.js draws into a fixed low-resolution target and blits up
+  nearest-neighbour, so the picture is pixelated rather than smooth. If WebGL is
+  unavailable the hand-drawn 2D pixel map takes over automatically — a fallback,
+  not a lesser mode.
 - **The imagery is hand-drawn pixel art, and every surface is flat.** The
   masthead site plan, the two ground strips, the map stakes and the search-clear
   glyph are Aseprite sprites (`assets-src/*.aseprite`) exported to `dist/assets/`
@@ -65,7 +72,7 @@ evidence are different materials and should not look alike.*
 
 **What is real:** the schema, the uncertainty model, the workflow, the write
 path, the persistence, the locked-down runtime, a packaged Windows build you can
-run without installing anything, and 317 automated checks across eight harnesses.
+run without installing anything, and 328 automated checks across eight harnesses.
 
 **What is curated:** five pilot objects across two worlds, with sources and
 stakeholders written as representative entries. This is a demonstration dataset,
@@ -167,14 +174,14 @@ archive, so real data would simply be loaded and left alone.
 
 ## Verification — what was actually run
 
-Eight harnesses, all green on the final revision, zero failures — 317 checks:
+Eight harnesses, all green on the final revision, zero failures — 328 checks:
 
 | Harness | Scope | Result |
 |---|---|---|
 | [`scripts/audit.js`](scripts/audit.js) | The trust boundary: LIKE wildcards, argument validation, orphan writes, foreign-key enforcement, the field budget | **42 checks pass**, exit 0 |
 | [`scripts/audit-window.js`](scripts/audit-window.js) | A real window: keyboard focus after a redraw, the failure notice, the new surfaces' contrast, and whether the archive-closed screen is reachable at all | **18 checks pass**, exit 0 |
 | [`scripts/verify.js`](scripts/verify.js) | Data layer + full IPC contract, headless, isolated temp DB | **39 checks pass**, exit 0 |
-| [`scripts/render-check.js`](scripts/render-check.js) | Real Electron window, real preload + CSP, live DOM | **72 checks pass**, exit 0 |
+| [`scripts/render-check.js`](scripts/render-check.js) | Real Electron window, real preload + CSP, live DOM, the 3D viewport and its fallback | **83 checks pass**, exit 0 |
 | [`scripts/check-assets.js`](scripts/check-assets.js) | Decodes all eleven shipped sprites; asserts the stencil and tile contract | **44 checks pass**, exit 0 |
 | [`scripts/package.js`](scripts/package.js) | Reads the built archive back: runtime files present, sprites, NASA photos and YouTube thumbnails present, no development artifact, and `dist/` byte-identical to the verified build | **76 checks pass**, exit 0 |
 | [`scripts/package.js --boot`](scripts/package.js) | Runs the real `.exe` against a throwaway `--user-data-dir`: window titled, sql.js loads its wasm from inside the archive, every table seeded | **7 checks pass**, exit 0 |

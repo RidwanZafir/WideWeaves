@@ -87,7 +87,12 @@ async function main() {
 
   const run = (js) => win.webContents.executeJavaScript(js, true);
 
-  await win.loadFile(APP_DIR);
+  /* The front door is normally the Three.js observation viewport. The 2D pixel
+     map is its fallback, and it is a real product surface, not a mock — so it
+     gets its own full pass under #no3d, where the fallback is what is on
+     screen. Loading with the hash both proves the lever works and keeps these
+     checks honest about which surface they are driving. */
+  await win.loadFile(APP_DIR, { hash: "no3d" });
   await sleep(700);
 
   check("window loaded without did-fail-load", !failure, failure || "ok");
@@ -205,6 +210,11 @@ async function main() {
     "intro state explains the stakes before a record is opened",
     (await run("!!document.querySelector('#record .intro .stakes')")),
     "stakes block present"
+  );
+  check(
+    "#no3d puts the 2D pixel map on screen as the fallback",
+    (await run("!document.getElementById('map-fallback').hidden && document.getElementById('viewport').hidden")),
+    "fallback visible, viewport hidden"
   );
 
   // ---- the flat / pixel contract -----------------------------------------
@@ -600,6 +610,89 @@ async function main() {
   if (consoleWarnings.length) {
     results.push({ name: "console warnings", pass: true, detail: consoleWarnings.join(" || ") });
   }
+
+  /* ---- the observation viewport (Three.js) --------------------------------
+     A second window WITHOUT #no3d, so this is the surface a user actually
+     sees first. The 3D claim is checked against the scene's own report
+     rather than the DOM: a canvas element tells you nothing about what was
+     rendered into it. */
+  const gl = createWindow({ show: false });
+  gl.webContents.on("console-message", onConsole);
+  gl.webContents.on("preload-error", (_e, p, err) => consoleErrors.push(`preload-error ${p}: ${err && err.message}`));
+  await gl.loadFile(APP_DIR);
+  // A never-shown window gets no requestAnimationFrame at all, and the
+  // viewport is a moving picture — so it gets brought up before it is judged.
+  gl.showInactive();
+  await sleep(1800);
+
+  const gl3 = await gl.webContents.executeJavaScript(`(() => {
+    const hook = window.__abnf3d || null;
+    const canvas = document.querySelector('#viewport canvas');
+    return {
+      hasHook: !!hook,
+      ok: hook ? hook.ok === true : false,
+      markerCount: hook ? hook.markerCount : 0,
+      distinctMarks: hook ? hook.distinctMarks : 0,
+      pixelTarget: hook ? hook.pixelTarget : null,
+      viewportShown: !document.getElementById('viewport').hidden,
+      fallbackHidden: document.getElementById('map-fallback').hidden,
+      canvasSize: canvas ? [Math.round(canvas.getBoundingClientRect().width), Math.round(canvas.getBoundingClientRect().height)] : null,
+      pixelated: canvas ? getComputedStyle(canvas).imageRendering : null
+    };
+  })()`, true);
+
+  check("the bundle loaded (window.ABNF3D exists)", gl3.hasHook, gl3.hasHook ? "present" : "missing");
+  check("the Three.js viewport came up", gl3.ok, gl3.ok ? "scene live" : "scene did not init");
+  check("the viewport is on screen and the 2D fallback is not", gl3.viewportShown && gl3.fallbackHidden, `viewport=${gl3.viewportShown} fallback=${gl3.fallbackHidden}`);
+  check("all five records are planted in the scene", gl3.markerCount === 5, `markers=${gl3.markerCount}`);
+  check("the five marks are five different silhouettes", gl3.distinctMarks === 5, `distinct=${gl3.distinctMarks}`);
+  check(
+    "the viewport draws low and blits up (pixelation contract)",
+    Array.isArray(gl3.pixelTarget) && gl3.pixelTarget[0] <= 512 && gl3.pixelTarget[1] <= 320,
+    Array.isArray(gl3.pixelTarget) ? `internal ${gl3.pixelTarget[0]}x${gl3.pixelTarget[1]}` : "none"
+  );
+  check("the canvas fills its frame at real size", Array.isArray(gl3.canvasSize) && gl3.canvasSize[0] > 200 && gl3.canvasSize[1] > 100, JSON.stringify(gl3.canvasSize));
+  check("the canvas is nearest-neighbour, not smoothed", gl3.pixelated === "pixelated", String(gl3.pixelated));
+
+  const beforeFrames = await gl.webContents.executeJavaScript("window.__abnf3d ? window.__abnf3d.frames() : 0", true);
+  await sleep(400);
+  const afterFrames = await gl.webContents.executeJavaScript("window.__abnf3d ? window.__abnf3d.frames() : 0", true);
+  check("the viewport is animating (not a frozen first frame)", afterFrames > beforeFrames, `${beforeFrames} -> ${afterFrames}`);
+
+  // Clicking a 3D mark must open that record: the viewport is a control.
+  // The viewport is a control, not a picture. Ask the scene where each mark
+  // lands on screen, click one there for real, and require its record opens.
+  const picked = await gl.webContents.executeJavaScript(`(async () => {
+    const hook = window.__abnf3d;
+    if (!hook || !hook.screenPositions) return { result: 'no hook' };
+    const canvas = document.querySelector('#viewport canvas');
+    if (!canvas) return { result: 'no canvas' };
+    const r = canvas.getBoundingClientRect();
+    const marks = hook.screenPositions().filter((m) => !m.behind && m.x > 0 && m.y > 0);
+    const opened = [];
+    for (const mark of marks) {
+      const x = r.left + mark.x;
+      const y = r.top + mark.y;
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: x, clientY: y, pointerId: 1, bubbles: true }));
+      canvas.dispatchEvent(new PointerEvent('pointerup', { clientX: x, clientY: y, pointerId: 1, bubbles: true }));
+      await new Promise((res) => setTimeout(res, 320));
+      const h2 = document.querySelector('#record h2');
+      const text = h2 ? h2.textContent.trim() : '';
+      if (text === mark.name) opened.push(mark.name);
+      // Back to the front door for the next mark.
+      const all = document.querySelector('#world-filters .chip[data-world=""]');
+      if (all) all.click();
+      await new Promise((res) => setTimeout(res, 420));
+    }
+    return { result: opened.length ? 'hit' : 'no mark hit', opened: opened, tried: marks.length };
+  })()`, true);
+  check(
+    "the viewport is a control: clicking a mark opens its record",
+    picked.result === "hit" && Array.isArray(picked.opened) && picked.opened.length >= 1,
+    `${picked.result} (${picked.opened ? picked.opened.join(", ") : ""} of ${picked.tried} marks)`
+  );
+
+  gl.destroy();
 
   // ---- report -------------------------------------------------------------
   console.log("");

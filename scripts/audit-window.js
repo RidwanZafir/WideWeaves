@@ -56,7 +56,10 @@ async function main() {
   win.webContents.on("console-message", onConsole);
   const run = (js) => win.webContents.executeJavaScript(js, true);
 
-  await win.loadFile(APP_DIR);
+  /* The keyboard-focus checks below drive the 2D pixel map, which is the
+     viewport's fallback surface — so this pass loads the fallback the same way
+     render-check does. The 3D surface's own controls are covered there. */
+  await win.loadFile(APP_DIR, { hash: "no3d" });
   await sleep(700);
 
   /* ---- 1. activating a record with the keyboard does not lose the keyboard ---

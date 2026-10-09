@@ -79,9 +79,14 @@ async function main() {
     console.log(`  ${png.length > 20000 ? "OK  " : "BLANK?"} ${name}.png  ${Math.round(png.length / 1024)} KB`);
   }
 
-  // 1 — the forgetting: what the app says before you open anything
-  await waitFor(`!!document.querySelector('.intro .map-ground')`, 'the archive map to draw');
-  await shot("01-intro", "The stakes and the archive map, before you open a record");
+  // 1 — the forgetting: what the app says before you open anything.
+  // The Three.js viewport drifts on an idle orbit, which is right for a user
+  // and wrong for a reproducible capture — so it is paused before the frame is
+  // taken, exactly as the CSS animations are frozen above.
+  await waitFor(`!!(window.__abnf3d && window.__abnf3d.ok) || !!document.querySelector('.map-fallback:not([hidden]) .map-ground')`, 'the front door to draw');
+  await run(`(window.__abnf3d && window.__abnf3d.pause) ? window.__abnf3d.pause() : null`);
+  await sleep(250);
+  await shot("01-intro", "The observation viewport: two worlds, five things left on them");
 
   // 2 — a well-documented record, the happy path
   await run(`Array.from(document.querySelectorAll('#record-list .row'))

@@ -140,7 +140,101 @@
     );
   }
 
-  /* ---- intro: the archive as a pixel landscape ---- */
+  /* ---- intro: the archive as a surface you can look at ----
+     A Three.js observation viewport is the front door, with the 2D pixel map
+     as its fallback rather than its inferior. Both read the same rows, so the
+     picture cannot disagree with the data whichever one is on screen. */
+
+  /* #no3d forces the 2D path, so the pixel-map contract can be tested in an
+     environment where WebGL does come up. It is a test lever, not a feature. */
+  var force2d = function () {
+    try {
+      return /(^|[#&?])no3d\b/.test(location.hash + location.search);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  var MARK_PATHS = {
+    lander: "assets/mark-lander.png",
+    descent: "assets/mark-descent.png",
+    impact: "assets/mark-impact.png",
+    wreckage: "assets/mark-wreckage.png",
+    cluster: "assets/mark-cluster.png"
+  };
+
+  var sceneApi = null;
+  var sceneTried = false;
+
+  function stopScene() {
+    if (sceneApi) {
+      try { sceneApi.dispose(); } catch (e) {}
+      sceneApi = null;
+    }
+  }
+
+  function setMode(viewportId, fallbackId, threeD) {
+    var viewport = document.getElementById(viewportId);
+    var fallback = document.getElementById(fallbackId);
+    if (!viewport || !fallback) return;
+    viewport.hidden = !threeD;
+    fallback.hidden = threeD;
+  }
+
+  async function mountScene() {
+    var viewport = document.getElementById("viewport");
+    var fallback = document.getElementById("map-fallback");
+    if (!viewport || !fallback) return;
+
+    stopScene();
+    sceneTried = true;
+
+    if (force2d() || !window.ABNF3D || typeof window.ABNF3D.init !== "function") {
+      setMode("viewport", "map-fallback", false);
+      return;
+    }
+
+    try {
+      var api = await window.ABNF3D.init(viewport, {
+        markers: state.allObjects.map(function (o) {
+          return {
+            id: o.id,
+            name: o.name,
+            mark: o.mark || "lander",
+            worldCode: o.worldCode,
+            certainty: o.certainty
+          };
+        }),
+        markPaths: MARK_PATHS,
+        onSelect: function (id) { selectObject(id, { keyboard: false }); },
+        getSelected: function () { return state.selectedId; },
+        onFail: function () { setMode("viewport", "map-fallback", false); }
+      });
+
+      if (!api || !api.ok) {
+        setMode("viewport", "map-fallback", false);
+        return;
+      }
+
+      sceneApi = api;
+      setMode("viewport", "map-fallback", true);
+
+      // Exposed for the render harness: the 3D claim has to be checkable, not
+      // asserted from the DOM.
+      window.__abnf3d = {
+        ok: true,
+        markerCount: api.markerCount(),
+        distinctMarks: api.distinctMarks(),
+        pixelTarget: api.pixelTarget(),
+        screenPositions: api.screenPositions,
+        pause: api.pause,
+        resume: api.resume,
+        frames: function () { return api.frames(); }
+      };
+    } catch (e) {
+      setMode("viewport", "map-fallback", false);
+    }
+  }
 
   function renderIntro() {
     var groups = {};
@@ -192,11 +286,17 @@
       "<h2>Everything here is still out there.</h2>" +
       '<p class="lede">Five records of hardware we left on the Moon and Mars. ' +
       "Colour is certainty; shape is kind.</p>" +
+      '<div class="viewport" id="viewport" hidden></div>' +
+      '<div class="map-fallback" id="map-fallback" hidden>' +
       '<div class="map">' + map + "</div>" +
+      '<p class="map-key">Colour says how well we know it. Shape says what it is.</p>' +
+      "</div>" +
       '<dl class="stakes">' + stakes + "</dl>" +
-      '<p class="intro-hint">Two ways in: the map above, the index on the left. ' +
-      '<span class="k">/</span> jumps to search. Every mark opens its record.</p>' +
+      '<p class="intro-hint">Drag to orbit; every mark opens its record. ' +
+      '<span class="k">/</span> jumps to search.</p>' +
       "</div>";
+
+    mountScene();
   }
 
   function renderFatal() {
@@ -226,6 +326,9 @@
 
     var r = state.record;
     var certainty = r.certainty || "unknown";
+
+    // Leaving the front door: the viewport is GPU time the record does not need.
+    stopScene();
 
     var badges = "";
     if (r.status) {

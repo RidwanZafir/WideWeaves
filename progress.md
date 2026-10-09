@@ -660,3 +660,57 @@ archive pattern and stays. The pass was calibration, five surgical changes:
 
 No harness, schema, or count changes. Full suite + package:prove green,
 captures regenerated, intro eyeballed. Committed as session 8.
+
+---
+
+## Session 9 — Three.js observation viewport (and one buried-mark bug)
+
+The ask was an overhaul good enough to win. Rather than re-skin, the front door
+got a real 3D surface — an observation viewport, which is the same intent the 2D
+map already served (orient before you read), not a new feature.
+
+### What ships
+
+- `src/scene.js` (bundled by esbuild to `dist/scene.bundle.js`, ~510 KB IIFE):
+  two seeded-noise strips, five marks planted on them as their own Aseprite
+  silhouettes, a low sun for long shadows, orbit-drag + wheel zoom, idle drift,
+  raycast picking, and a **fixed 384×240 render target blitted up
+  nearest-neighbour** — the 3D is pixelated on purpose, so the identity holds.
+- Marks are sampled through a shader that reads *alpha only*. The shipped PNGs
+  are masks (uniform RGB, shape in alpha), so multiplying a tint through them
+  would render black — a trap the 2D CSS masks never had.
+- Camera fit is computed from the bounding box and the *horizontal* fov, because
+  the canvas is wide and short: a vertical-fov fit put the whole archive in a
+  thin band down the middle of the frame.
+- `#no3d` forces the 2D pixel map, which is the fallback for WebGL failure.
+  Both read the same rows, so both surfaces agree by construction.
+
+### The bug that made it look cheap
+
+Marks were placed at `ground + 1.5` while their geometry had grown to 9.8 tall —
+so every mark was buried 3.4 units *under* the surface and only its top showed.
+Three captures were spent on lighting and framing before the cause was obvious:
+the anchoring, not the lighting. Fixed with `MARK_HALF_HEIGHT`, plus a thin base
+disc so each mark reads as set on ground rather than hovering.
+
+### What the harness says
+
+`render-check.js` grew from 72 to **83** checks: the bundle loads, the scene
+comes up, five marks are planted and are five distinct silhouettes, the internal
+target is ≤512×320 (pixelation contract), the canvas is nearest-neighbour, the
+scene is actually animating (93→118 frames — a never-shown window gets no
+requestAnimationFrame at all, which the first attempt hit), and — the one worth
+having — **clicking a mark opens its record**, driven by real pointer events at
+coordinates the scene reports itself. `audit-window.js` now loads `#no3d`
+because its focus checks drive the 2D map.
+
+Total: **328 checks, eight suites, zero failures.**
+
+### Honest limitations
+
+- Three.js is vendored in `vendor/` and bundled by esbuild from source; the
+  build is not reproducible in this repo (no package.json dependency), though
+  the committed bundle is what ships.
+- The 3D intro is where the GPU time goes; opening a record disposes the scene.
+- WebGL was available headlessly via SwiftShader, so the fallback path is
+  verified *only* through the forced `#no3d` lever, never by a real GPU failure.
