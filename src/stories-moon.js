@@ -169,7 +169,8 @@ const MOON_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Luna 9 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-006A" },
-      { kind: "Image archive", title: "Lunar Reconnaissance Orbiter views of early landing sites", reference: "LROC, Arizona State University", nasaUrl: "https://www.lroc.asu.edu/" }
+      { kind: "Image archive", title: "Lunar Reconnaissance Orbiter views of early landing sites", reference: "LROC, Arizona State University", nasaUrl: "https://www.lroc.asu.edu/" },
+      { kind: "Video", title: "The First Moon Landing Wasn't Apollo — And We Just Found It", reference: "Sabine Hossenfelder · science educator", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=rrRauDKoTJM", nasaCaption: "On Luna 9's landing and the recent effort to pin down its location. Third-party science reporting; the mission record sits in the sources above." }
     ],
     next_action: {
       action: "Pair the LRO site image with this record",
@@ -247,6 +248,7 @@ const MOON_STORIES = [
       { kind: "Mission record", title: "Surveyor 1 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-045A" },
       { kind: "Mission record", title: "Surveyor 1 mission summary", reference: "Public mission archive", nasaUrl: "https://science.nasa.gov/mission/surveyor-1/" },
       { kind: "Image archive", title: "Surface photography returned by the lander", reference: "Public image collection", nasaId: "PIA12910", nasaUrl: "https://images.nasa.gov/details-PIA12910", nasaCaption: "NASA Surveyor 1 spacecraft sitting silently on Oceanus Procellarum, the first US spacecraft to land on another planet on June 2, 1966 in this image taken by NASA Lunar Reconnaissance Orbiter." },
+      { kind: "Video", title: "America's First Lunar Surveyor: 50 Years Later", reference: "NASA Jet Propulsion Laboratory · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=FOWNrvvTIZM", nasaCaption: "JPL retrospective on Surveyor 1's landing and what it proved about the surface Apollo would walk on." },
       { kind: "Technical report", title: "Soft-landing design and performance notes", reference: "Engineering report series" }
     ],
     next_action: {
@@ -324,7 +326,8 @@ const MOON_STORIES = [
     sources: [
       { kind: "Mission record", title: "Surveyor 3 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1967-035A" },
       { kind: "Mission record", title: "Apollo 12 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-099A" },
-      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal: Apollo 12", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" }
+      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal: Apollo 12", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" },
+      { kind: "Video", title: "Apollo 12: The Pinpoint Mission", reference: "NASA · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=l11sW5KOi_g", nasaCaption: "Apollo 12's precision landing beside Surveyor 3 and the retrieval of its parts for study." }
     ],
     next_action: {
       action: "File the contamination-reanalysis alongside the microbe claim",
@@ -479,7 +482,8 @@ const MOON_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Luna 17 / Lunokhod 1 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1970-095A" },
-      { kind: "Image archive", title: "Lunar Reconnaissance Orbiter views of early landing sites", reference: "LROC, Arizona State University", nasaUrl: "https://www.lroc.asu.edu/" }
+      { kind: "Image archive", title: "Lunar Reconnaissance Orbiter views of early landing sites", reference: "LROC, Arizona State University", nasaUrl: "https://www.lroc.asu.edu/" },
+      { kind: "Screening room", title: "Lunokhod: Moon Robot — museum collection record", reference: "Smithsonian National Air and Space Museum · museum collection", nasaUrl: "https://airandspace.si.edu/multimedia-gallery/image/web12065-2011640jpg", nasaCaption: "No independently verifiable YouTube copy of a Lunokhod film could be confirmed, so the archive points at the museum's collection record instead of embedding a guess." }
     ],
     next_action: {
       action: "Log the laser-ranging recovery as part of this record",
@@ -555,7 +559,8 @@ const MOON_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Apollo 15 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1971-063A" },
-      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal: Apollo 15", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" }
+      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal: Apollo 15", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" },
+      { kind: "Video", title: "Apollo 15: “Never Been on a Ride like this Before”", reference: "NASA · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=1Mqsd0ru_pc", nasaCaption: "The first lunar rover: Scott and Irwin driving Hadley–Apennine, told for the mission's 50th anniversary." }
     ],
     next_action: {
       action: "Attach the traverse map to this record",
@@ -631,7 +636,8 @@ const MOON_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Apollo 11 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059A" },
-      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" }
+      { kind: "Transcript archive", title: "Apollo Lunar Surface Journal", reference: "NASA history office", nasaUrl: "https://www.nasa.gov/history/alsj/" },
+      { kind: "Video", title: "Apollo 11's last working experiment on the moon", reference: "JILA Science (University of Colorado / NIST) · university channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=iwxrNurAuu8", nasaCaption: "How the Apollo 11 retroreflector still measures the Earth–Moon distance. Centred on the Apollo 11 array; the other four work the same way." }
     ],
     next_action: {
       action: "Record each array's ranging status separately",

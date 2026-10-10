@@ -32,7 +32,7 @@ const OBJECTS = [...MOON_STORIES, ...MARS_STORIES];
  * replaced.
  */
 
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 function ensureMetaTable(db) {
   db.run(`CREATE TABLE IF NOT EXISTS meta (

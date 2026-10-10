@@ -2,10 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <!-- Local-only. No remote origins are permitted anywhere in the policy. -->
+    <!-- Local-first. Scripts, styles, and archive imagery stay vendored; the
+         only remote origins ever permitted are the click-to-load film player
+         (youtube-nocookie embeds, created on invite only) and the films' own
+         thumbnails. No autoplay, no tracking pixels, no analytics. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data:; font-src 'self' file:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';"
+      content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data: https://i.ytimg.com; frame-src https://www.youtube-nocookie.com; font-src 'self' file:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';"
     />
     <meta name="color-scheme" content="dark" />
     <title>Abandoned but Not Forgotten</title>

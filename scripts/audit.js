@@ -304,12 +304,12 @@ async function main() {
   const afterUpgrade = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_id IS NOT NULL")[0].values[0][0];
   const videos = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_url LIKE '%youtube%'")[0].values[0][0];
   const photos = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_id LIKE 'PIA%'")[0].values[0][0];
-  check("opening the old build's archive delivers every citation", afterUpgrade === 7, afterUpgrade + " of 7");
+  check("opening the old build's archive delivers every citation", afterUpgrade === 19, afterUpgrade + " of 19");
   // The three photographs are the ones an old archive ALREADY has a row for,
   // with no citation on it. Skipping those on a title match is how two of the
   // three silently vanished the first time this was written.
   check("existing uncited rows are enriched, not skipped", photos === 3, photos + " of 3 photos");
-  check("the videos reach it too", videos === 4, videos + " video sources");
+  check("the videos reach it too", videos === 16, videos + " video sources");
 
   const version = upgraded.exec("SELECT value FROM meta WHERE key = 'seed_version'")[0].values[0][0];
   check("the archive records which pilot set it is on", Number(version) >= 2, "seed_version=" + version);

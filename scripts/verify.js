@@ -196,6 +196,46 @@ async function main() {
     surveyor.sources.some((s) => (s.nasaUrl || "") === "https://images.nasa.gov/details-PIA12910"),
     "photo link"
   );
+
+  console.log("\n== watch coverage: film after every story ==");
+  const idRe = /^[A-Za-z0-9_-]{11}$/;
+  const watchRe = /[?&]v=([A-Za-z0-9_-]{11})(?:[&#]|$)/;
+  let unwatched = 0;
+  let badIds = 0;
+  for (const o of all) {
+    const d = call("archive:object", o.id);
+    const films = (d.sources || []).filter(
+      (s) => s.kind === "Video" && /youtube\.com\/watch/.test(s.nasaUrl || "")
+    );
+    const rooms = (d.sources || []).filter(
+      (s) => s.kind === "Screening room" && /^https:\/\//.test(s.nasaUrl || "")
+    );
+    if (!films.length && !rooms.length) {
+      unwatched++;
+      console.log("  UNWATCHED  " + o.name);
+      continue;
+    }
+    for (const f of films) {
+      const m = watchRe.exec(f.nasaUrl || "");
+      if (!m || !idRe.test(m[1]) || !f.title || !f.reference) {
+        badIds++;
+        console.log("  BAD FILM  " + o.name + " :: " + f.nasaUrl);
+      }
+    }
+    for (const r of rooms) {
+      if (!r.title || !r.reference || !r.nasaCaption) {
+        badIds++;
+        console.log("  THIN ROOM  " + o.name);
+      }
+    }
+  }
+  check("all 18 stories carry watch content", unwatched === 0, unwatched + " without film or screening link");
+  check("every film ID is a valid 11-character embeddable ID", badIds === 0, badIds + " malformed");
+  const youtubeTotal = all.reduce((n, o) => {
+    const d = call("archive:object", o.id);
+    return n + (d.sources || []).filter((s) => /youtube\.com\/watch/.test(s.nasaUrl || "")).length;
+  }, 0);
+  check("sixteen story-specific films, none reused", youtubeTotal === 16, youtubeTotal + " youtube sources");
   const flagged = call("archive:objects", {});
   check("the list flags media per record", flagged.every((o) => typeof o.hasVideo === "boolean" && typeof o.hasPhoto === "boolean"), JSON.stringify(flagged.map((o) => [o.name, o.hasVideo, o.hasPhoto])));
   check("Luna 2 flags its footage", flagged.find((o) => o.name === "Luna 2").hasVideo === true, "hasVideo");

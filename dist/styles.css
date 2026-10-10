@@ -2294,3 +2294,461 @@ body.reading-focus .record {
     transition: none;
   }
 }
+
+/* ============================================================
+   Editorial layer — home, collections, story, screening room.
+
+   One grid, two inks. The Moon sets its accent to steel, Mars to ember,
+   by rescoping the accent tokens — every rule below stays shared, so both
+   worlds always feel like one archive. Flat surfaces and hard edges
+   throughout: the pixel contract in styles.css still holds.
+   ============================================================ */
+
+[data-world="moon"] {
+  --ember: #9fb2c8;
+  --ember-bright: #cfdae6;
+  --ember-dim: rgba(159, 178, 200, 0.14);
+}
+
+/* ---- wayfinding: the breadcrumb ---- */
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--warm-faint);
+  margin-bottom: var(--s4);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--warm-hair);
+}
+
+.crumbs button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--steel-dim);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--hair-strong);
+}
+
+.crumbs button:hover {
+  color: var(--paper);
+}
+
+/* ---- home: the front door as an editorial opening ---- */
+
+.hero-title {
+  font-size: 38px;
+}
+
+.hero-lede {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--paper-dim);
+  max-width: 62ch;
+  margin: 0 0 var(--s6);
+  text-wrap: pretty;
+}
+
+.collections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--warm-hair);
+  margin-bottom: var(--s6);
+}
+
+.collection-card {
+  padding: var(--s5);
+  background: var(--warm-raised);
+}
+
+.collection-card + .collection-card {
+  border-left: 1px solid var(--warm-hair);
+}
+
+.collection-card[data-world="moon"] {
+  background: var(--surface);
+}
+
+.collection-eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
+  margin-bottom: var(--s2);
+}
+
+.collection-card h3 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--paper);
+  margin: 0 0 var(--s2);
+}
+
+.collection-card p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--paper-dim);
+  margin-bottom: var(--s4);
+}
+
+.featured-row {
+  margin-bottom: var(--s6);
+}
+
+.featured-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--warm-hair);
+  margin-bottom: var(--s3);
+}
+
+.feature,
+.collection-featured {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--s5);
+  align-items: start;
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--warm-hair);
+}
+
+.feature-thumb {
+  display: block;
+  width: 200px;
+  height: 112px;
+  object-fit: cover;
+  border: 1px solid var(--hair-strong);
+  background: var(--void);
+}
+
+img[data-gone="true"] {
+  display: none;
+}
+
+.feature-kicker {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: var(--s1);
+}
+
+.feature-title {
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--paper);
+  margin-bottom: var(--s1);
+}
+
+.feature-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--paper-dim);
+  margin-bottom: var(--s2);
+}
+
+.feature-summary {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--paper-dim);
+  margin-bottom: var(--s3);
+  max-width: 62ch;
+}
+
+.why-line {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--paper);
+  max-width: 62ch;
+  padding-left: var(--s4);
+  border-left: 2px solid var(--ember);
+  margin-bottom: var(--s5);
+}
+
+/* ---- collection view: shelf header, one featured, then the index ---- */
+
+.collection h2 {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+}
+
+.collection-index {
+  margin-top: var(--s4);
+  border-top: 1px solid var(--warm-hair);
+}
+
+.index-row {
+  appearance: none;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: var(--s3);
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--warm-hair);
+  padding: var(--s3) var(--s1);
+  cursor: pointer;
+}
+
+.index-no {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warm-faint);
+  padding-top: 3px;
+}
+
+.index-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.index-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--paper);
+}
+
+.index-row:hover .index-title {
+  color: var(--ember-bright);
+}
+
+.index-sub {
+  font-size: 13px;
+  color: var(--paper-dim);
+}
+
+.index-meta {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--warm-faint);
+}
+
+/* ---- screening room: film after the story ---- */
+
+.watch {
+  margin-top: var(--s6);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--warm-hair);
+}
+
+.watch-label {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  margin-bottom: var(--s4);
+}
+
+.watch-label::before {
+  content: "";
+  width: 18px;
+  height: 2px;
+  background: var(--ember);
+  flex: none;
+}
+
+.video {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  gap: var(--s4);
+  align-items: start;
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--warm-hair);
+}
+
+.video-facade {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+}
+
+.video-thumb-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--void);
+  border: 1px solid var(--hair-strong);
+}
+
+.video-thumb-wrap[data-broken="true"] {
+  min-height: 96px;
+  background: var(--raised);
+}
+
+.video-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-facade .media-play {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+}
+
+.video-play-label {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember-bright);
+  margin-top: var(--s2);
+}
+
+.video-facade:hover .video-play-label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.video-stage {
+  position: relative;
+  padding-top: 56.25%;
+  background: var(--void);
+  border: 1px solid var(--hair-strong);
+}
+
+.video-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--paper);
+  margin-bottom: 2px;
+}
+
+.video-channel {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: var(--s2);
+}
+
+.video-caption {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--paper-dim);
+  margin-bottom: var(--s2);
+  max-width: 62ch;
+}
+
+.video-link {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.video-link a {
+  color: var(--ember-bright);
+  text-underline-offset: 3px;
+}
+
+/* ---- rail rows: a ledger, not a card deck ---- */
+
+.row {
+  border-bottom: 1px solid var(--hair);
+}
+
+/* ---- keyboard focus for every new control ---- */
+
+.crumbs button:focus-visible,
+.index-row:focus-visible,
+.video-facade:focus-visible,
+.collection-card .btn:focus-visible,
+.feature .toolbtn:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+/* ---- narrow windows: shelves stack, film goes single column ---- */
+
+@media (max-width: 1180px) {
+  .collections {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-card + .collection-card {
+    border-left: 0;
+    border-top: 1px solid var(--warm-hair);
+  }
+
+  .feature,
+  .collection-featured {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .video {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .collection h2 {
+    font-size: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .index-row,
+  .video-facade,
+  .crumbs button {
+    transition: none;
+  }
+}

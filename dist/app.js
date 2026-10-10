@@ -120,18 +120,79 @@
   }
 
   /* ---- media: the evidence, in the reading flow ----
-     Photos and film live with the story they support — not in the masthead,
-     which has one job (find things). Thumbs are vendored locally so the
-     offline archive stays offline; the links open outside the app. */
+     Photos live with the story they support — not in the masthead, which has
+     one job (find things). Film lives in its own Watch section after the
+     narrative, never mixed into the photo evidence. Thumbs for the four
+     launch-era films are vendored locally so those cards work with
+     connect-src 'none'; newer films use the video's own thumbnail with a
+     graceful offline fallback. Links open outside the app. */
 
   function isVideoSource(src) {
     return /youtube\.com\/watch/.test(src.nasaUrl || "");
   }
 
+  // A YouTube ID is exactly 11 URL-safe characters. Anything else is not
+  // embedded — an untrusted or malformed URL becomes a plain external link.
+  function videoIdFor(src) {
+    var m = /[?&]v=([A-Za-z0-9_-]{11})(?:[&#]|$)/.exec(src.nasaUrl || "");
+    if (!m) return null;
+    return /^[A-Za-z0-9_-]{11}$/.test(m[1]) ? m[1] : null;
+  }
+
+  // Films whose thumbnails shipped with the app (offline-safe). Everything
+  // newer loads the video's own thumbnail, which fails gracefully offline.
+  var VENDORED_YT = {
+    S9HdPi9Ikhk: true,
+    nr5Pj6GQL2o: true,
+    C43KXGQuUuY: true,
+    Ki_Af_o9Q9s: true
+  };
+
   function thumbFor(src) {
-    var m = /[?&]v=([A-Za-z0-9_-]{11})/.exec(src.nasaUrl || "");
-    if (m) return "assets/yt-" + m[1] + ".jpg";
+    var id = videoIdFor(src);
+    if (id) {
+      if (VENDORED_YT[id]) return "assets/yt-" + id + ".jpg";
+      return "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg";
+    }
     return NASA_THUMBS[src.nasaId] || null;
+  }
+
+  function embedUrlFor(id) {
+    // youtube-nocookie, no autoplay parameter: nothing plays until invited.
+    return "https://www.youtube-nocookie.com/embed/" + id;
+  }
+
+  // Every story carries at least one watch entry: YouTube films (embedded
+  // on click) or, where no verifiable YouTube copy exists, a screening-room
+  // link to the verified official page. Never an invented ID.
+  function watchForRecord(record) {
+    var films = [];
+    var screenings = [];
+    var sources = (record && record.sources) || [];
+    for (var i = 0; i < sources.length; i++) {
+      var src = sources[i];
+      if (isVideoSource(src)) {
+        var id = videoIdFor(src);
+        if (!id) continue;
+        films.push({
+          id: id,
+          url: src.nasaUrl,
+          thumb: thumbFor(src),
+          remote: !VENDORED_YT[id],
+          title: src.title,
+          channel: src.reference || "",
+          caption: src.nasaCaption || ""
+        });
+      } else if (src.kind === "Screening room" && src.nasaUrl) {
+        screenings.push({
+          url: src.nasaUrl,
+          title: src.title,
+          channel: src.reference || "",
+          caption: src.nasaCaption || ""
+        });
+      }
+    }
+    return { films: films, screenings: screenings };
   }
 
   function mediaForRecord(record) {
@@ -139,14 +200,13 @@
     var sources = (record && record.sources) || [];
     for (var i = 0; i < sources.length; i++) {
       var src = sources[i];
-      if (!src.nasaUrl) continue;
+      if (!src.nasaUrl || isVideoSource(src)) continue;
       var thumb = thumbFor(src);
       if (!thumb) continue;
       out.push({
-        video: isVideoSource(src),
         url: src.nasaUrl,
         thumb: thumb,
-        kind: isVideoSource(src) ? ("Film · " + src.reference) : ("Photo · NASA " + src.nasaId),
+        kind: "Photo · NASA " + src.nasaId,
         title: src.title,
         caption: src.nasaCaption || ""
       });
@@ -158,11 +218,10 @@
     if (!media.length) return "";
     var cards = media.map(function (m) {
       return (
-        '<a class="media-card' + (m.video ? " media-card--video" : "") + '"' +
+        '<a class="media-card"' +
         ' href="' + escapeHtml(m.url) + '" target="_blank" rel="noopener">' +
         '<span class="media-thumb-wrap">' +
         '<img class="media-thumb" src="' + escapeHtml(m.thumb) + '" alt="" loading="lazy" />' +
-        (m.video ? '<span class="media-play" aria-hidden="true"></span>' : "") +
         "</span>" +
         '<span class="media-body">' +
         '<span class="media-kind">' + escapeHtml(m.kind) + "</span>" +
@@ -178,6 +237,70 @@
       '<p class="media-note">Opens outside the archive, in your browser.</p>' +
       "</div>"
     );
+  }
+
+  /* ---- watch: film after the story, never instead of it ----
+     Click-to-load facades: no iframe, no network, and no autoplay until the
+     reader invites the film in. A blocked or offline embed still leaves the
+     title, the attribution, and a working link to the original. */
+
+  function renderWatch(watch) {
+    if (!watch.films.length && !watch.screenings.length) return "";
+    var cards = watch.films.map(function (f) {
+      return (
+        '<div class="video" data-video="' + escapeHtml(f.id) + '">' +
+        '<button type="button" class="video-facade" data-play="' + escapeHtml(f.id) + '"' +
+        ' aria-label="Play video: ' + escapeHtml(f.title) + '">' +
+        '<span class="video-thumb-wrap">' +
+        (f.thumb ? '<img class="video-thumb"' + (f.remote ? ' data-remote="true"' : "") +
+          ' src="' + escapeHtml(f.thumb) + '" alt="" loading="lazy" />' : "") +
+        '<span class="media-play" aria-hidden="true"></span>' +
+        "</span>" +
+        '<span class="video-play-label" aria-hidden="true">Play film</span>' +
+        "</button>" +
+        '<div class="video-body">' +
+        '<p class="video-title">' + escapeHtml(f.title) + "</p>" +
+        (f.channel ? '<p class="video-channel">' + escapeHtml(f.channel) + "</p>" : "") +
+        (f.caption ? '<p class="video-caption">' + escapeHtml(f.caption) + "</p>" : "") +
+        '<p class="video-link"><a href="' + escapeHtml(f.url) + '" target="_blank" rel="noopener">Watch on YouTube</a></p>' +
+        "</div></div>"
+      );
+    }).join("");
+    var rooms = watch.screenings.map(function (s) {
+      return (
+        '<div class="video video--room">' +
+        '<div class="video-body">' +
+        '<p class="video-title">' + escapeHtml(s.title) + "</p>" +
+        (s.channel ? '<p class="video-channel">' + escapeHtml(s.channel) + "</p>" : "") +
+        (s.caption ? '<p class="video-caption">' + escapeHtml(s.caption) + "</p>" : "") +
+        '<p class="video-link"><a href="' + escapeHtml(s.url) + '" target="_blank" rel="noopener">Open the official page</a></p>' +
+        "</div></div>"
+      );
+    }).join("");
+    return (
+      '<section class="watch" aria-label="Related video">' +
+      '<div class="watch-label">Watch Related Video</div>' +
+      '<div class="watch-list">' + cards + rooms + "</div>" +
+      "</section>"
+    );
+  }
+
+  function mountVideoFrame(box, id) {
+    if (!box || box.querySelector("iframe")) return;
+    var facade = box.querySelector(".video-facade");
+    var frame = document.createElement("iframe");
+    frame.setAttribute("src", embedUrlFor(id));
+    frame.setAttribute("title", "Related video");
+    frame.setAttribute("loading", "lazy");
+    frame.setAttribute("allow", "accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+    frame.setAttribute("allowfullscreen", "");
+    frame.className = "video-frame";
+    var stage = document.createElement("div");
+    stage.className = "video-stage";
+    stage.appendChild(frame);
+    if (facade) box.replaceChild(stage, facade);
+    else box.insertBefore(stage, box.firstChild);
+    box.setAttribute("data-playing", "true");
   }
 
   /* ---- intro: the archive as a surface you can look at ----
@@ -323,11 +446,44 @@
 
     var eyebrow = state.allObjects.length + " records · " + order.length + " worlds";
 
+    // Collection entries and featured stories are drawn from the same rows
+    // as the map, so the front door cannot disagree with the archive.
+    var cards = order.map(function (code) {
+      var g = groups[code];
+      return (
+        '<div class="collection-card" data-world="' + escapeHtml(code) + '">' +
+        '<p class="collection-eyebrow">Collection · ' + g.items.length + (g.items.length === 1 ? " story" : " stories") + "</p>" +
+        "<h3>" + escapeHtml(g.name) + "</h3>" +
+        "<p>" + escapeHtml(collectionLede(code)) + "</p>" +
+        '<button type="button" class="btn" data-world-jump="' + escapeHtml(code) + '">Explore the collection</button>' +
+        "</div>"
+      );
+    }).join("");
+
+    var featured = ["moon", "mars"].map(function (code) {
+      var g = groups[code];
+      if (!g || !g.items.length) return "";
+      var o = g.items[0];
+      return (
+        '<div class="feature" data-world="' + escapeHtml(code) + '">' +
+        (o.heroImage ? '<img class="feature-thumb" src="' + escapeHtml(o.heroImage) + '" alt="" loading="lazy" />' : "") +
+        '<div class="feature-body">' +
+        '<p class="feature-kicker">Featured · ' + escapeHtml(g.name) + "</p>" +
+        '<p class="feature-title">' + escapeHtml(o.name) + "</p>" +
+        (o.subtitle ? '<p class="feature-sub">' + escapeHtml(o.subtitle) + "</p>" : "") +
+        '<button type="button" class="toolbtn" data-id="' + o.id + '">Read the full story</button>' +
+        "</div></div>"
+      );
+    }).join("");
+
     refs.record.innerHTML =
       '<div class="intro">' +
       '<div class="hero">' +
-      '<p class="hero-eyebrow">Pilot archive · ' + escapeHtml(eyebrow) + "</p>" +
-      '<h2 class="hero-title">Everything here is still out there.</h2>' +
+      '<p class="hero-eyebrow">A curatorial archive · ' + escapeHtml(eyebrow) + "</p>" +
+      '<h2 class="hero-title">Abandoned but Not Forgotten</h2>' +
+      '<p class="hero-lede">Every machine we left on the Moon and Mars is still out there. ' +
+      "This archive keeps eighteen of their stories — complete narratives, evidence, and film — " +
+      "so the hardware is remembered for what it did, not only for where it stopped.</p>" +
       '<div class="viewport-wrap">' +
       '<div class="viewport" id="viewport" hidden></div>' +
       '<div class="map-fallback" id="map-fallback" hidden>' +
@@ -340,12 +496,103 @@
       '<span class="hero-rule">Colour is how well we know it. Shape is what it is.</span>' +
       "</p>" +
       "</div>" +
+      '<div class="collections">' + cards + "</div>" +
+      '<div class="featured-row">' +
+      '<p class="featured-label">Featured stories</p>' + featured +
+      "</div>" +
       '<dl class="stakes">' + stakes + "</dl>" +
+      '<p class="why-line">These missions failed, ended, or were left behind — and each one taught ' +
+      "the next mission how to survive. That is why the archive keeps them.</p>" +
       '<p class="intro-hint"><span class="k">/</span> jumps to search. ' +
       "Every mark on either ground is one of the five kinds in the key.</p>" +
       "</div>";
 
     mountScene();
+  }
+
+  var WORLD_LEDE = {
+    moon: "Eight stories from the world we walked on — first impacts, soft landings, rovers, and the mirrors still answering.",
+    mars: "Ten stories from the world that eats landers — triumphs, traps, storms, and the wrecks that taught us."
+  };
+
+  var WORLD_NAMES = { moon: "The Moon", mars: "Mars" };
+
+  function collectionLede(code) {
+    return WORLD_LEDE[code] || "Stories left on this ground.";
+  }
+
+  function worldName(code) {
+    if (state.worlds) {
+      for (var i = 0; i < state.worlds.length; i++) {
+        if (state.worlds[i].code === code) return state.worlds[i].name;
+      }
+    }
+    return WORLD_NAMES[code] || code;
+  }
+
+  /* ---- collection view: one world, introduced, then listed ----
+     Reached by choosing a collection (front door, breadcrumb) with no record
+     open. The rail keeps working alongside it; nothing about filtering or
+     selection changes. */
+
+  function renderCollection(code) {
+    stopScene();
+    var name = worldName(code);
+    var items = state.objects.filter(function (o) { return o.worldCode === code; });
+    var total = state.allObjects.filter(function (o) { return o.worldCode === code; }).length;
+
+    var head =
+      '<div class="collection" data-world="' + escapeHtml(code) + '">' +
+      '<nav class="crumbs" aria-label="Archive location">' +
+      '<button type="button" data-go="home">Archive</button>' +
+      '<span aria-hidden="true"> · </span><span>' + escapeHtml(name) + "</span>" +
+      "</nav>" +
+      '<p class="eyebrow">Collection</p>' +
+      "<h2>" + escapeHtml(name) + "</h2>" +
+      '<p class="standfirst">' + escapeHtml(collectionLede(code)) + "</p>" +
+      '<p class="read-meta">' + total + (total === 1 ? " story" : " stories") + "</p>";
+
+    if (!items.length) {
+      refs.record.innerHTML = head +
+        '<p class="blank">Nothing in this collection matches the current search. Clear the search to see all ' + total + ".</p></div>";
+      refs.record.scrollTop = 0;
+      showNotice();
+      return;
+    }
+
+    var first = items[0];
+    var feature =
+      '<div class="collection-featured">' +
+      (first.heroImage ? '<img class="feature-thumb" src="' + escapeHtml(first.heroImage) + '" alt="" loading="lazy" />' : "") +
+      '<div class="feature-body">' +
+      '<p class="feature-kicker">Featured</p>' +
+      '<p class="feature-title">' + escapeHtml(first.name) + "</p>" +
+      (first.subtitle ? '<p class="feature-sub">' + escapeHtml(first.subtitle) + "</p>" : "") +
+      (first.summary ? '<p class="feature-summary">' + escapeHtml(first.summary) + "</p>" : "") +
+      '<button type="button" class="btn" data-id="' + first.id + '">Read the full story</button>' +
+      "</div></div>";
+
+    var rows = items.map(function (o, i) {
+      var bits = [];
+      if (o.year != null) bits.push(String(o.year));
+      if (o.readingMinutes != null) bits.push(String(o.readingMinutes) + " min");
+      if (o.hasVideo) bits.push("film");
+      else if (o.hasPhoto) bits.push("photo");
+      return (
+        '<button type="button" class="index-row" data-id="' + o.id + '">' +
+        '<span class="index-no" aria-hidden="true">' + (i + 1 < 10 ? "0" + (i + 1) : String(i + 1)) + "</span>" +
+        '<span class="index-body">' +
+        '<span class="index-title">' + escapeHtml(o.name) + "</span>" +
+        (o.subtitle ? '<span class="index-sub">' + escapeHtml(o.subtitle) + "</span>" : "") +
+        (bits.length ? '<span class="index-meta">' + escapeHtml(bits.join(" · ")) + "</span>" : "") +
+        "</span></button>"
+      );
+    }).join("");
+
+    refs.record.innerHTML = head + feature +
+      '<div class="collection-index" role="list" aria-label="Stories in this collection">' + rows + "</div></div>";
+    refs.record.scrollTop = 0;
+    showNotice();
   }
 
   function renderFatal() {
@@ -733,7 +980,8 @@
     }
 
     if (!state.record) {
-      if (state.allObjects.length) renderIntro();
+      if (state.world && state.allObjects.length) renderCollection(state.world);
+      else if (state.allObjects.length) renderIntro();
       else refs.record.innerHTML = "";
       return;
     }
@@ -796,10 +1044,16 @@
     }
 
     var html =
-      '<div class="record-inner" data-readsize="' + state.readSize + '"' +
+      '<div class="record-inner" data-world="' + escapeHtml(r.worldCode || "") + '" data-readsize="' + state.readSize + '"' +
       (state.focusMode ? ' data-focus="on"' : "") +
       (sameRecord ? ' data-replay="same"' : "") + ">" +
       '<div class="read-progress" data-pct="0" aria-hidden="true"><span></span></div>' +
+      '<nav class="crumbs" aria-label="Archive location">' +
+      '<button type="button" data-go="home">Archive</button>' +
+      '<span aria-hidden="true"> · </span>' +
+      '<button type="button" data-go="collection" data-world="' + escapeHtml(r.worldCode || "") + '">' + escapeHtml(r.worldName || "Collection") + "</button>" +
+      '<span aria-hidden="true"> · </span><span>' + escapeHtml(r.name) + "</span>" +
+      "</nav>" +
       '<div class="eyebrow"><span>Record</span>' +
       (r.mark ? '<span class="world"> · ' + escapeHtml(r.mark) + "</span>" : "") +
       "</div>" +
@@ -828,6 +1082,9 @@
     html += renderReadToolbar() + renderNarrPanel();
     html += renderHero(r);
     html += renderNarrative(r);
+    // The film comes after the complete story, never before it — and the
+    // photo evidence stays its own section rather than mixing with video.
+    html += renderWatch(watchForRecord(r));
     html += renderMedia(mediaForRecord(r));
     html += blocks + renderRecordNav(r) + "</div>";
 
@@ -1326,6 +1583,50 @@
     await render();
   }
 
+  /* ---- views: home, collection, story ----
+     Chips filter; these travel. Going home or opening a collection clears
+     the open record (and its voice) so the front door or the shelf is what
+     is on screen. Filter chips are rebuilt so their pressed states agree. */
+
+  function pressedChips(container, attr, value) {
+    if (!container) return;
+    Array.prototype.forEach.call(container.children, function (c) {
+      c.setAttribute("aria-pressed", (c.getAttribute(attr) || "") === (value || "") ? "true" : "false");
+    });
+  }
+
+  async function goHome() {
+    silenceForRecord(null);
+    state.selectedId = null;
+    state.record = null;
+    state.notice = "";
+    state.world = null;
+    state.category = null;
+    state.q = "";
+    if (refs.search) refs.search.value = "";
+    pressedChips(refs.filters, "data-world", "");
+    pressedChips(refs.catFilters, "data-category", "");
+    await reloadObjects();
+    if (refs.record) refs.record.scrollTop = 0;
+    await render();
+  }
+
+  async function showCollection(code) {
+    silenceForRecord(null);
+    state.selectedId = null;
+    state.record = null;
+    state.notice = "";
+    state.world = code;
+    state.category = null;
+    state.q = "";
+    if (refs.search) refs.search.value = "";
+    pressedChips(refs.filters, "data-world", code);
+    pressedChips(refs.catFilters, "data-category", "");
+    await reloadObjects();
+    if (refs.record) refs.record.scrollTop = 0;
+    await render();
+  }
+
   /* ---- chrome ---- */
 
   var clearField = function (id) {
@@ -1461,6 +1762,33 @@
           selectObject(Number(mark.getAttribute("data-id")), { keyboard: isKeyboardClick(e) });
           return;
         }
+        // Front door, shelves, and index rows all open by record id.
+        var opener = e.target.closest("[data-id]");
+        if (opener && !opener.classList.contains("row")) {
+          selectObject(Number(opener.getAttribute("data-id")), { keyboard: isKeyboardClick(e) });
+          return;
+        }
+        // Breadcrumb travel: home, or this record's collection.
+        var go = e.target.closest("[data-go]");
+        if (go) {
+          if (go.getAttribute("data-go") === "home") goHome();
+          else showCollection(go.getAttribute("data-world"));
+          return;
+        }
+        // Collection entries on the front door.
+        var jump = e.target.closest("[data-world-jump]");
+        if (jump) {
+          showCollection(jump.getAttribute("data-world-jump"));
+          return;
+        }
+        // A film is invited in, never autoplayed.
+        var play = e.target.closest("[data-play]");
+        if (play) {
+          var box = play.closest(".video");
+          var id = play.getAttribute("data-play");
+          if (box && /^[A-Za-z0-9_-]{11}$/.test(id || "")) mountVideoFrame(box, id);
+          return;
+        }
         // Previous / next story navigation.
         var nav = e.target.closest("[data-nav]");
         if (nav) {
@@ -1495,6 +1823,21 @@
       refs.record.addEventListener("scroll", function () {
         updateReadProgress();
       }, { passive: true });
+
+      // Remote film thumbnails fail offline. Error events do not bubble, so
+      // listen in capture: mark the broken image (the stylesheet hides it —
+      // inline styles are forbidden here) and let the flat wrapper, the
+      // title, and the link below carry the entry instead.
+      refs.record.addEventListener("error", function (e) {
+        var img = e.target;
+        if (img && img.tagName === "IMG" && img.getAttribute("data-remote") === "true") {
+          img.setAttribute("data-gone", "true");
+          var wrap = img.closest(".video-thumb-wrap");
+          if (wrap) wrap.setAttribute("data-broken", "true");
+        } else if (img && img.tagName === "IMG" && img.classList.contains("feature-thumb")) {
+          img.setAttribute("data-gone", "true");
+        }
+      }, true);
     }
   }
 

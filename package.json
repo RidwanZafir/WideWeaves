@@ -16,7 +16,8 @@
     "vercel-build": "node scripts/export-web.js",
     "audit": "node scripts/audit.js",
     "audit:window": "electron scripts/audit-window.js",
-    "test": "npm run audit && npm run audit:window && node scripts/verify.js && node scripts/check-assets.js && electron scripts/render-check.js"
+    "check:videos": "node scripts/check-videos.js",
+    "test": "npm run audit && npm run audit:window && node scripts/verify.js && node scripts/check-assets.js && node scripts/check-videos.js && electron scripts/render-check.js"
   },
   "dependencies": {
     "electron": "^44.6.0",

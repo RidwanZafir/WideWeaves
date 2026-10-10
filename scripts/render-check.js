@@ -443,7 +443,17 @@ async function main() {
       rateOpts: r.querySelectorAll('[data-narr="rate"] option').length,
       hasProgress: !!r.querySelector('.read-progress'),
       hasNav: !!r.querySelector('.record-nav'),
-      catChips: Array.from(document.querySelectorAll('#category-filters .chip')).map(c => c.textContent.trim())
+      catChips: Array.from(document.querySelectorAll('#category-filters .chip')).map(c => c.textContent.trim()),
+      watchLabel: r.querySelector('.watch-label') ? r.querySelector('.watch-label').textContent.trim() : null,
+      films: r.querySelectorAll('.watch .video[data-video]').length,
+      playIds: Array.from(r.querySelectorAll('.watch .video[data-video]')).map(v => v.getAttribute('data-video')),
+      channels: Array.from(r.querySelectorAll('.watch .video-channel')).map(e => e.textContent.trim()),
+      iframeBefore: !!r.querySelector('.watch iframe'),
+      evidenceVideos: r.querySelectorAll('.media-card--video').length,
+      crumbs: r.querySelector('.crumbs') ? r.querySelector('.crumbs').textContent.trim() : null,
+      worldInk: r.querySelector('.record-inner') ? r.querySelector('.record-inner').getAttribute('data-world') : null,
+      narrBeforeWatch: (() => { const n = r.querySelector('.narrative'); const w = r.querySelector('.watch'); if (!n || !w) return 'missing'; return (n.compareDocumentPosition(w) & 4) ? 'narrative-first' : 'wrong-order'; })(),
+      watchBeforeMedia: (() => { const w = r.querySelector('.watch'); const m = r.querySelector('.media'); if (!w) return 'missing'; if (!m) return 'no-media'; return (w.compareDocumentPosition(m) & 4) ? 'watch-first' : 'wrong-order'; })()
     };
   })()`);
 
@@ -466,6 +476,15 @@ async function main() {
   check("reading progress is on the page", rec.hasProgress, "progress present");
   check("previous/next story navigation is present", rec.hasNav, "nav present");
   check("story-kind filters are offered", rec.catChips.length >= 3, rec.catChips.join(" | "));
+  check("the story carries a breadcrumb home", !!rec.crumbs && /Archive/.test(rec.crumbs), rec.crumbs);
+  check("the record is inked by its world", rec.worldInk === "moon", rec.worldInk);
+  check("film has its own Watch section after the story", !!rec.watchLabel && /Watch Related Video/.test(rec.watchLabel), rec.watchLabel);
+  check("the watch section names the film and its channel", rec.films >= 1 && rec.channels.length >= 1 && rec.channels[0].length > 0, rec.channels.join(" | "));
+  check("film IDs are valid embeddable IDs", rec.playIds.length >= 1 && rec.playIds.every(id => /^[A-Za-z0-9_-]{11}$/.test(id)), rec.playIds.join(","));
+  check("the narrative comes before the film", rec.narrBeforeWatch === "narrative-first", rec.narrBeforeWatch);
+  check("the film comes before the photo evidence", rec.watchBeforeMedia === "watch-first" || rec.watchBeforeMedia === "no-media", rec.watchBeforeMedia);
+  check("photo evidence carries no video cards", rec.evidenceVideos === 0, `video-cards=${rec.evidenceVideos}`);
+  check("no film loads before it is invited", rec.iframeBefore === false, "no iframe yet");
 
   // ---- search -------------------------------------------------------------
   // The full narrative is searchable, so the probe uses a term only one
@@ -662,6 +681,51 @@ async function main() {
   if (consoleWarnings.length) {
     results.push({ name: "console warnings", pass: true, detail: consoleWarnings.join(" || ") });
   }
+
+  // ---- views and the screening room -------------------------------------
+  // These run after the console check on purpose: inviting a film loads a
+  // remote embed, and that network must never pollute the violation audit.
+  const playSrc = await run(`(() => {
+    const btn = document.querySelector('.watch [data-play]');
+    if (!btn) return 'no facade';
+    btn.click();
+    const frame = document.querySelector('.watch iframe');
+    return frame ? frame.getAttribute('src') : 'no iframe';
+  })()`);
+  await sleep(400);
+  check("inviting a film loads its embed", !!playSrc && playSrc.indexOf("https://www.youtube-nocookie.com/embed/") === 0, playSrc);
+  check("embeds never autoplay", !!playSrc && playSrc.indexOf("autoplay=1") === -1, playSrc);
+
+  await run(`(() => { const b = document.querySelector('.crumbs [data-go="home"]'); if (b) b.click(); })()`);
+  await sleep(500);
+  check("the breadcrumb returns to the front door", await run("!!document.querySelector('#record .intro .stakes')"), "intro again");
+
+  await run(`(() => { const b = document.querySelector('[data-world-jump="moon"]'); if (b) b.click(); })()`);
+  await sleep(500);
+  // Note: concise arrows returning object literals (e.g. () => ({...}))
+  // cannot cross executeJavaScript's structured clone in this Electron —
+  // block bodies with an explicit return are used instead.
+  const shelf = await run(`(() => {
+    var out = {
+      moon: !!document.querySelector('.collection[data-world="moon"]'),
+      rows: document.querySelectorAll('.collection-index .index-row').length,
+      crumb: null
+    };
+    var c = document.querySelector('.collection .crumbs');
+    out.crumb = c ? c.textContent.trim() : null;
+    return out;
+  })()`);
+  check("the Moon collection opens as its own view", shelf.moon, "collection present");
+  check("the collection indexes its stories", shelf.rows === 8, `rows=${shelf.rows}`);
+  check("the collection keeps the way home", !!shelf.crumb && /Archive/.test(shelf.crumb), shelf.crumb);
+
+  await run("document.querySelector('.collection-index .index-row').click()");
+  await sleep(500);
+  check(
+    "a shelf row opens its story",
+    (await run("document.querySelector('#record h2') ? document.querySelector('#record h2').textContent.trim() : ''")) === "Luna 2",
+    "story opens"
+  );
 
   /* ---- the observation viewport (Three.js) --------------------------------
      A second window WITHOUT #no3d, so this is the surface a user actually

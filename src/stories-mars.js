@@ -87,7 +87,8 @@ const MARS_STORIES = [
       { role: "Engineer", name: "Entry, descent and landing research", note: "Studies the storm landing as a descent success and a surface-link failure." }
     ],
     sources: [
-      { kind: "Mission record", title: "Mars 3 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1971-049A" }
+      { kind: "Mission record", title: "Mars 3 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1971-049A" },
+      { kind: "Video", title: "MARS 2 & 3 — Lander and Rover models", reference: "Retro Space HD · independent space-history channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=SCqiG3xciC4", nasaCaption: "The Mars 2 and 3 landers and the Prop-M rover, from a third-party space-history channel — not an agency source." }
     ],
     next_action: {
       action: "Keep the landing-site candidacy marked as unconfirmed",
@@ -163,7 +164,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Mars Pathfinder NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1996-068A" },
-      { kind: "Mission archive", title: "Mars Pathfinder mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-pathfinder/" }
+      { kind: "Mission archive", title: "Mars Pathfinder mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-pathfinder/" },
+      { kind: "Video", title: "NASA's Mars Pathfinder & Sojourner Rover (360 View)", reference: "NASA Jet Propulsion Laboratory · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=9HGRReKUzfU", nasaCaption: "A 360-degree panorama of the landing site with Sojourner among the rocks." }
     ],
     next_action: {
       action: "Link the Sojourner driving logs to this record",
@@ -239,7 +241,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Mars Global Surveyor NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1996-062A" },
-      { kind: "Mission archive", title: "Mars Global Surveyor mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-global-surveyor/" }
+      { kind: "Mission archive", title: "Mars Global Surveyor mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-global-surveyor/" },
+      { kind: "Screening room", title: "Mars Discoveries — MOC gullies and new craters (JPL video page)", reference: "NASA Jet Propulsion Laboratory · official video page", nasaUrl: "https://www.jpl.nasa.gov/videos/mars-discoveries/", nasaCaption: "JPL's film on the gully and new-crater discoveries from Surveyor's camera. No independently verifiable YouTube copy could be confirmed, so the archive links the official page instead of embedding a guess." }
     ],
     next_action: {
       action: "Attach the loss investigation summary to this record",
@@ -314,7 +317,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Mars Polar Lander NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1999-001A" },
-      { kind: "Mission archive", title: "Mars Polar Lander mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-polar-lander/" }
+      { kind: "Mission archive", title: "Mars Polar Lander mission page", reference: "NASA/JPL", nasaUrl: "https://science.nasa.gov/mission/mars-polar-lander/" },
+      { kind: "Video", title: "JPL and the Space Age: The Breaking Point", reference: "NASA Jet Propulsion Laboratory · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=kuYDkVRyMkg", nasaCaption: "Feature-length JPL documentary on the loss of Mars Polar Lander (and Mars Climate Orbiter) and the end of Faster, Better, Cheaper." }
     ],
     next_action: {
       action: "Keep the failure cause labelled as leading hypothesis, not fact",
@@ -390,7 +394,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Beagle 2 NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-022C" },
-      { kind: "Mission archive", title: "Mars Express mission page", reference: "European Space Agency", nasaUrl: "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express" }
+      { kind: "Mission archive", title: "Mars Express mission page", reference: "European Space Agency", nasaUrl: "https://www.esa.int/Science_Exploration/Space_Science/Mars_Express" },
+      { kind: "Video", title: "Professor Mark Sims on finding Beagle 2 (University of Leicester interview)", reference: "University of Leicester · university channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=iAKAJR4N6zQ", nasaCaption: "Beagle 2's mission manager on the search and the 2015 recovery in orbiter images. Title as described in the University's release." }
     ],
     next_action: {
       action: "Note the panel count as the mission's key evidence",
@@ -466,7 +471,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Spirit (MER-A) NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-027A" },
-      { kind: "Mission archive", title: "Mars Exploration Rovers mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/mer/" }
+      { kind: "Mission archive", title: "Mars Exploration Rovers mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/mer/" },
+      { kind: "Video", title: "The Curious Life of a Mars Rover", reference: "National Geographic · Nat Geo Live", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=7zpojhD4hpI", nasaCaption: "A National Geographic talk on the Mars Exploration Rovers — how Spirit and Opportunity worked and what they found." }
     ],
     next_action: {
       action: "Attach the Troy soil analysis to this record",
@@ -542,7 +548,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Opportunity (MER-B) NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-032A" },
-      { kind: "Mission archive", title: "Mars Exploration Rovers mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/mer/" }
+      { kind: "Mission archive", title: "Mars Exploration Rovers mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/mer/" },
+      { kind: "Video", title: "Opportunity: NASA Rover Completes Mars Mission", reference: "NASA Jet Propulsion Laboratory · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=1Ll-VHYxWXU", nasaCaption: "JPL's farewell retrospective: fifteen years, proof of ancient liquid water, and the off-world driving record." }
     ],
     next_action: {
       action: "File the storm tau record with the final telemetry note",
@@ -618,7 +625,8 @@ const MARS_STORIES = [
     ],
     sources: [
       { kind: "Mission record", title: "Phoenix NSSDC master catalog entry", reference: "NASA Space Science Data Coordinated Archive", nasaUrl: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-034A" },
-      { kind: "Mission archive", title: "Phoenix Mars mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/phoenix/" }
+      { kind: "Mission archive", title: "Phoenix Mars mission page", reference: "NASA/JPL", nasaUrl: "https://mars.nasa.gov/phoenix/" },
+      { kind: "Video", title: "Phoenix Mars Landing: Nerves and Joy", reference: "NASA Jet Propulsion Laboratory · official channel", nasaId: "YouTube", nasaUrl: "https://www.youtube.com/watch?v=hH5pNFROlYU", nasaCaption: "Landing-day animation and mission-control audio from 25 May 2008." }
     ],
     next_action: {
       action: "Pair the sublimation image pair with this record",
