@@ -184,11 +184,117 @@ const OBJECTS = [
   }
 ];
 
+/*
+ * Pilot data ships with the app, so it has to be able to REACH an app that has
+ * already run.
+ *
+ * `seedIfEmpty()` used to return the moment it found one world row, which means
+ * the archive created on a user's first launch decided what that installation
+ * would ever contain: every citation, photo and film added in a later build
+ * simply never arrived, and the app looked like it had no resources at all.
+ * That is not a demo problem — it is the app silently lying about its contents,
+ * which is the one thing this project exists to argue against.
+ *
+ * So the seed is versioned. An empty archive is seeded whole; an archive from
+ * an older build is BACKFILLED — missing citations are added by title, and
+ * nothing a curator wrote is ever touched or replaced.
+ */
+
+const SEED_VERSION = 2;
+
+function ensureMetaTable(db) {
+  db.run(`CREATE TABLE IF NOT EXISTS meta (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  )`);
+}
+
+function getSeedVersion(db) {
+  try {
+    const rows = db.exec("SELECT value FROM meta WHERE key = 'seed_version'");
+    if (!rows.length || !rows[0].values.length) return 0;
+    return Number(rows[0].values[0][0]) || 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function setSeedVersion(db, version) {
+  db.run("INSERT OR REPLACE INTO meta (key, value) VALUES ('seed_version', ?)", [String(version)]);
+}
+
+/*
+ * Bring citations forward on an archive that predates them.
+ *
+ * An archive written by an older build already has most of the pilot SOURCE
+ * ROWS — just without the citation on them. So this does not only insert; it
+ * also ENRICHES a row whose title already exists but whose citation is empty.
+ * Skipping on a title match alone looked fine and silently dropped two of the
+ * three NASA photographs, because the row was "already there".
+ *
+ * Only rows the pilot set declares are touched, and only their citation
+ * columns: a curator's own additions are invisible here, and nothing is ever
+ * read, moved, rewritten or deleted.
+ */
+function backfillCitations(db) {
+  let added = 0;
+  let enriched = 0;
+
+  const objectRows = db.exec("SELECT id, name FROM objects");
+  if (!objectRows.length) return { added: 0, enriched: 0 };
+  const byName = {};
+  for (const [id, name] of objectRows[0].values) byName[name] = id;
+
+  for (const obj of OBJECTS) {
+    const objectId = byName[obj.name];
+    if (objectId === undefined) continue;
+
+    for (const src of obj.sources || []) {
+      if (!src.nasaId && !src.nasaUrl) continue;
+
+      const existing = db.exec(
+        "SELECT id, nasa_id FROM sources WHERE object_id = ? AND title = ?",
+        [objectId, src.title]
+      );
+
+      if (existing.length && existing[0].values.length) {
+        const [rowId, currentNasa] = existing[0].values[0];
+        if (currentNasa) continue; // already carries its citation
+        db.run("UPDATE sources SET nasa_id = ?, nasa_url = ?, nasa_caption = ? WHERE id = ?", [
+          src.nasaId || null,
+          src.nasaUrl || null,
+          src.nasaCaption || null,
+          rowId
+        ]);
+        enriched++;
+        continue;
+      }
+
+      db.run(
+        "INSERT INTO sources (object_id, kind, title, reference, nasa_id, nasa_url, nasa_caption, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [objectId, src.kind, src.title, src.reference, src.nasaId || null, src.nasaUrl || null, src.nasaCaption || null, now()]
+      );
+      added++;
+    }
+  }
+
+  return { added, enriched };
+}
+
 async function seedIfEmpty() {
   const db = getDb();
+  ensureMetaTable(db);
 
   const existing = db.exec("SELECT id FROM worlds LIMIT 1");
+
   if (existing.length && existing[0].values.length) {
+    // An archive that already exists. If it predates the current pilot data,
+    // bring the citations forward rather than leaving it stranded.
+    if (getSeedVersion(db) < SEED_VERSION) {
+      backfillCitations(db);
+      setSeedVersion(db, SEED_VERSION);
+      saveDb();
+    }
     return;
   }
 
@@ -264,7 +370,8 @@ async function seedIfEmpty() {
     }
   }
 
+  setSeedVersion(db, SEED_VERSION);
   saveDb();
 }
 
-module.exports = { seedIfEmpty };
+module.exports = { seedIfEmpty, SEED_VERSION };

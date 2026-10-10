@@ -1,5 +1,5 @@
 const path = require("path");
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const { initDb, closeDb } = require("./src/db");
 const { seedIfEmpty } = require("./src/seed");
 const { registerHandlers } = require("./src/renderer-handlers");
@@ -63,6 +63,18 @@ function describeBootFailure(err) {
 }
 
 async function start() {
+  /*
+   * No application menu at all.
+   *
+   * An Electron window ships with a File/Edit/View/Window menu bar, and View
+   * contains Reload, Toggle Developer Tools and Zoom controls. That is not a
+   * detail: the window was hardlocked against DevTools while its own menu bar
+   * offered one, which is the kind of claim that only survives until somebody
+   * screenshots it. The instrument has no menu; the app is driven by its own
+   * interface.
+   */
+  Menu.setApplicationMenu(null);
+
   try {
     await bootstrap();
     bootFailure = null;

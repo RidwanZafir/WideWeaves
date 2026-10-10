@@ -267,8 +267,81 @@ async function main() {
   require.cache[legacyPath] = originalModule;
   fs.rmSync(oldDir, { recursive: true, force: true });
 
+  /* ---- an archive that predates the citations must still receive them -----
+     This is the defect that shipped: the app created its archive on first run,
+     `seedIfEmpty()` then returned early forever, and every NASA photo and film
+     added in a later build never reached that installation. The archive looked
+     empty of resources and the app looked broken. */
+  console.log("\n== an archive from an older build is brought forward ==");
+
+  const staleDir = fs.mkdtempSync(path.join(os.tmpdir(), "abnf-audit-stale-"));
+
+  /* Fresh copies of BOTH modules: seed.js holds a reference to the db module it
+     required, so clearing only the db cache would leave seed writing to the
+     other database entirely — a test that passes while proving nothing. */
+  const staleDbPath = require.resolve("../src/db");
+  const staleSeedPath = require.resolve("../src/seed");
+  const staleOriginalDb = require.cache[staleDbPath];
+  const staleOriginalSeed = require.cache[staleSeedPath];
+  delete require.cache[staleDbPath];
+  delete require.cache[staleSeedPath];
+
+  const staleDb = require("../src/db");
+  const staleSeed = require("../src/seed");
+
+  await staleDb.initDb({ userDataDir: staleDir });
+  await staleSeed.seedIfEmpty();
+
+  const sd = staleDb.getDb();
+  sd.run("DELETE FROM meta WHERE key = 'seed_version'");
+  sd.run("DELETE FROM sources WHERE nasa_id IS NOT NULL");
+  const beforeUpgrade = sd.exec("SELECT COUNT(*) FROM sources WHERE nasa_id IS NOT NULL")[0].values[0][0];
+  check("the simulated old archive starts with no citations at all", beforeUpgrade === 0, beforeUpgrade + " rows");
+
+  await staleSeed.seedIfEmpty();
+
+  const upgraded = staleDb.getDb();
+  const afterUpgrade = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_id IS NOT NULL")[0].values[0][0];
+  const videos = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_url LIKE '%youtube%'")[0].values[0][0];
+  const photos = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_id LIKE 'PIA%'")[0].values[0][0];
+  check("opening the old build's archive delivers every citation", afterUpgrade === 7, afterUpgrade + " of 7");
+  // The three photographs are the ones an old archive ALREADY has a row for,
+  // with no citation on it. Skipping those on a title match is how two of the
+  // three silently vanished the first time this was written.
+  check("existing uncited rows are enriched, not skipped", photos === 3, photos + " of 3 photos");
+  check("the videos reach it too", videos === 4, videos + " video sources");
+
+  const version = upgraded.exec("SELECT value FROM meta WHERE key = 'seed_version'")[0].values[0][0];
+  check("the archive records which pilot set it is on", Number(version) >= 2, "seed_version=" + version);
+
+  // A curator's own work must survive an upgrade untouched.
+  const writeTarget = upgraded.exec("SELECT id FROM objects LIMIT 1")[0].values[0][0];
+  upgraded.run(
+    "INSERT INTO next_actions (object_id, made_by, made_at, action, why, status) VALUES (?, 'curator', 'whenever', 'A note the curator wrote', 'Because.', 'open')",
+    [writeTarget]
+  );
+  await staleSeed.seedIfEmpty();
+  const kept = upgraded.exec("SELECT COUNT(*) FROM next_actions WHERE made_by = 'curator'")[0].values[0][0];
+  check("an upgrade never touches what a curator wrote", kept === 1, kept + " curator rows");
+
+  await staleSeed.seedIfEmpty();
+  const onceMore = upgraded.exec("SELECT COUNT(*) FROM sources WHERE nasa_id IS NOT NULL")[0].values[0][0];
+  check("opening again does not duplicate anything", onceMore === afterUpgrade, `${afterUpgrade} -> ${onceMore}`);
+
+  staleDb.closeDb();
+  delete require.cache[staleDbPath];
+  delete require.cache[staleSeedPath];
+  require.cache[staleDbPath] = staleOriginalDb;
+  require.cache[staleSeedPath] = staleOriginalSeed;
+  fs.rmSync(staleDir, { recursive: true, force: true });
+
   console.log("");
   console.log(failures === 0 ? "ALL AUDIT CHECKS PASSED" : failures + " AUDIT CHECK(S) FAILED");
+  console.log("");
+  console.log("  note: the archive-upgrade block above simulates a stale archive by");
+  console.log("        stripping citations from a fresh one. The live path is covered by");
+  console.log("        package.js --boot, which runs the real .exe against a throwaway");
+  console.log("        user-data dir and seeds it from nothing.");
 
   closeDb();
   try {

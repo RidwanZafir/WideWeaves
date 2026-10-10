@@ -548,7 +548,7 @@
       '<div class="panel-label"><span>Propose a next action</span></div>' +
       '<form id="action-form" novalidate>' +
       '<div class="field">' +
-      '<label for="action-text">What should happen next</label>' +
+      '<label for="action-text">Proposed action</label>' +
       '<input id="action-text" name="action" maxlength="140" placeholder="One concrete next step." required />' +
       "</div>" +
       '<div class="field">' +
