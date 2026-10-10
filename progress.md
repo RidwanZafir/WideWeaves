@@ -753,3 +753,41 @@ layout, and added real bottom padding to the provenance column anyway.
 
 **Verified:** npm test green, 8 captures regenerated and eyeballed,
 package + boot + asar green.
+
+---
+
+## Session 11 — Premium means the invisible defects get fixed
+
+"Make it premium" reads as decoration, so it was treated as a bug list instead.
+Three real defects, all invisible in a screenshot and obvious the moment you use
+the thing.
+
+1. **Writing threw away your place.** `renderRecord()` rebuilds the column's
+   HTML wholesale, so filing a next action reset the record column's scroll and
+   replayed the entrance animation — the reader got bounced to the top of the
+   record they were reading. Fixed by marking a same-record re-render
+   (`data-replay="same"`, which also suppresses the block stagger) and
+   restoring `scrollTop`. Two harness checks now guard both halves.
+2. **Three chips, one meaning.** Status, era/year and certainty were all
+   bordered pills, so the single value that carries semantic colour competed
+   with two that carry none. Status and era are facts and now read as a mono
+   fact line; certainty is the only chip on the record.
+3. **Initial-avatars.** Two letters in a grey square per stakeholder — the most
+   recognisable piece of generated-interface furniture there is, and it
+   repeated the role label directly underneath it. Removed; the role in ember
+   mono is already the visual and the note is the value.
+
+Also: record title 33px → 40px and lede → 18.5px, so the record and the hero
+headline sit on a deliberate two-step scale instead of drifting apart; and filed
+times were raw ISO (`2026-10-10T07:09:40.865Z`) — now `16 Oct 2026 · 13:23`,
+because provenance is the point of the record.
+
+**A bug the capture caught that the tests could not have:** the certainty chip
+rendered the literal string `undefined`. `badgesLine` was built one statement
+before `var badges` was assigned, and `var` hoisting made it undefined without
+throwing. Nothing asserted the chip's *content* — only that elements existed.
+Worth remembering as the limits of DOM-count checks: the harness would have been
+happy with a chip full of `undefined`.
+
+**Verified:** npm test green (render-check 72 → 85 checks), package + boot +
+asar green, 8 captures regenerated and eyeballed.

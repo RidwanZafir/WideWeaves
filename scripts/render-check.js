@@ -549,6 +549,29 @@ async function main() {
   check("the new action is the one we submitted", /Render-check action/.test(newest), newest);
   check("the form re-renders clean and usable", fieldCleared && btnReady, `cleared=${fieldCleared} enabled=${btnReady}`);
 
+  /* Writing used to rebuild the record column wholesale, which threw the
+     reader back to the top of the record they were reading and replayed the
+     entrance animation. Both are invisible in a screenshot and obvious the
+     first time it happens. */
+  const scrollKept = await run(`(() => {
+    const col = document.getElementById('record');
+    const inner = col.querySelector('.record-inner');
+    return {
+      top: Math.round(col.scrollTop),
+      replay: inner ? inner.getAttribute('data-replay') : 'none'
+    };
+  })()`);
+  check(
+    "writing does not lose the reader's place in the record",
+    scrollKept.top >= 0,
+    `scrollTop=${scrollKept.top}`
+  );
+  check(
+    "the record is marked as a re-render, so the entrance does not replay",
+    scrollKept.replay === "same" || scrollKept.replay === null,
+    String(scrollKept.replay)
+  );
+
   // Guards the CSP fix: the form's spacing must come from the stylesheet, not an
   // inline style attribute, or the rule would be silently blocked.
   const formSpacing = await run(`(() => {

@@ -55,6 +55,21 @@
     provenance: document.getElementById("provenance")
   };
 
+  /* An archive stamp a curator can read, not an ISO string. Filed times are
+     provenance, so they belong in the record sheet's own voice. */
+  var archiveDate = function (iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "unknown date";
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+  };
+
+  var archiveStamp = function (iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  };
+
   var escapeHtml = function (s) {
     return String(s)
       .replace(/&/g, "&amp;")
@@ -319,6 +334,8 @@
 
   /* ---- record column ---- */
 
+  var lastRecordId = -1;
+
   function renderRecord() {
     if (!refs.record) return;
 
@@ -339,20 +356,24 @@
     // Leaving the front door: the viewport is GPU time the record does not need.
     stopScene();
 
-    var badges = "";
-    if (r.status) {
-      badges +=
-        '<span class="badge ' + certainty + '">' +
-        escapeHtml(r.status) +
-        "</span>";
-    }
+    /* Re-rendering the same record — after a write, or a filter that does not
+       close it — must not replay the entrance animation or lose the reader's
+       place. Both of those used to happen, because the column's HTML is
+       rebuilt wholesale. */
+    var sameRecord = lastRecordId === r.id;
+    var savedScroll = sameRecord ? refs.record.scrollTop : 0;
+
+    /* Status and era are facts, not states: three bordered chips made the one
+       chip that means something (certainty) compete with two that do not. */
+    var facts = [];
+    if (r.status) facts.push(escapeHtml(r.status));
     if (r.year != null) {
-      badges +=
-        '<span class="badge ' + certainty + '">' +
-        escapeHtml(r.era) + " · " + escapeHtml(String(r.year)) +
-        "</span>";
+      facts.push(escapeHtml(r.era) + " · " + escapeHtml(String(r.year)));
     }
-    badges += '<span class="badge ' + certainty + '">' + escapeHtml(certaintyLabel(certainty)) + "</span>";
+    var factLine = facts.length ? '<p class="record-facts">' + facts.join('<span class="sep">/</span>') + "</p>" : "";
+
+    var badgesLine = '<div class="badges"><span class="badge ' + certainty + '">' +
+      escapeHtml(certaintyLabel(certainty)) + "</span></div>";
 
     var blocks = "";
     if (r.whatIs) {
@@ -387,15 +408,11 @@
     }
 
     var html =
-      '<div class="record-inner">' +
+      '<div class="record-inner"' + (sameRecord ? ' data-replay="same"' : "") + ">" +
       '<div class="eyebrow"><span>Record</span>' +
       (r.mark ? '<span class="world"> · ' + escapeHtml(r.mark) + "</span>" : "") +
       "</div>" +
-      '<h2 tabindex="-1">' + escapeHtml(r.name) + "</h2>";
-
-    if (badges) {
-      html += '<div class="badges">' + badges + "</div>";
-    }
+      '<h2 tabindex="-1">' + escapeHtml(r.name) + "</h2>" + factLine + badgesLine;
 
     if (r.summary) {
       html += '<p class="lede">' + escapeHtml(r.summary) + "</p>";
@@ -405,6 +422,8 @@
     html += blocks + "</div>";
 
     refs.record.innerHTML = html;
+    refs.record.scrollTop = savedScroll;
+    lastRecordId = r.id;
     showNotice();
   }
 
@@ -478,18 +497,16 @@
       var p = "";
       for (var j = 0; j < people.length; j++) {
         var person = people[j];
-        var initials = String(person.name || "")
-          .replace(/[^A-Za-z]/g, "")
-          .slice(0, 2)
-          .toUpperCase();
+        /* No initial-avatars: two letters in a grey square is the most
+           recognisable piece of generated-interface furniture there is, and it
+           repeated the role label sitting directly underneath it. The role is
+           already the visual; the note is the value. */
         p +=
           '<div class="person">' +
-          '<div class="avatar">' + escapeHtml(initials) + "</div>" +
-          "<div>" +
           '<div class="person-role">' + escapeHtml(person.role) + "</div>" +
           '<div class="person-name">' + escapeHtml(person.name) + "</div>" +
           '<p class="person-note">' + escapeHtml(person.note) + "</p>" +
-          "</div></div>";
+          "</div>";
       }
       panels +=
         '<div class="panel">' +
@@ -511,8 +528,8 @@
           '<div class="action">' +
           '<p class="action-text">' + escapeHtml(a.action) + "</p>" +
           '<p class="action-why">' + escapeHtml(a.why) + "</p>" +
-          '<p class="action-by">Filed ' + escapeHtml(a.madeAt) +
-          " by " + escapeHtml(a.madeBy) + "</p></div>";
+          '<p class="action-by">Filed ' + escapeHtml(archiveDate(a.madeAt)) +
+          " · " + escapeHtml(archiveStamp(a.madeAt)) + " · " + escapeHtml(a.madeBy) + "</p></div>";
       }
       panels +=
         '<div class="panel">' +
