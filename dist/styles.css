@@ -2666,6 +2666,233 @@ body {
 }
 
 /* ============================================================
+   Layout overhaul — structured shell, responsive to the phone.
+
+   Desktop: a two-row masthead (bar + collection nav) over a contained
+   three-column measure. Below 900px the shell stacks into a single
+   page column — story first, archive second, provenance last — and the
+   window's 1024px floor drops with it (see src/window.js). Nothing
+   below changes what the 1024px compact-desktop contract asserts.
+   ============================================================ */
+
+.masthead {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "id tools"
+    "nav nav";
+  gap: 0 var(--s5);
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.masthead-id {
+  grid-area: id;
+}
+
+.masthead-tools {
+  grid-area: tools;
+  flex: none;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.masthead-nav {
+  grid-area: nav;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s5);
+  padding: var(--s2) 0 var(--s3);
+}
+
+.masthead-nav .filter-set--cats {
+  flex-basis: auto;
+}
+
+.workspace {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.colophon {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ---- rail collections: the sidebar shelf ---- */
+
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--hair);
+}
+
+.rail-nav-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #666666;
+  margin-bottom: var(--s1);
+}
+
+.rail-nav-btn {
+  appearance: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  width: 100%;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  text-align: left;
+}
+
+.rail-nav-btn:hover {
+  background: #f1f1f1;
+}
+
+.rail-nav-btn[aria-current="true"] {
+  background: #000000;
+  color: #ffffff;
+}
+
+.rail-nav-btn[aria-current="true"] .rail-nav-count {
+  color: #ffffff;
+}
+
+.rail-nav-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- below 900px: one page column, story first ---- */
+
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+  }
+
+  .app {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .workspace {
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+  }
+
+  #record {
+    order: -1;
+  }
+
+  .rail,
+  .record,
+  .provenance {
+    overflow: visible;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .rail {
+    border-top: 1px solid var(--hair);
+  }
+
+  .record {
+    padding: var(--s5) var(--s4) var(--s6);
+  }
+
+  .record-list {
+    overflow: visible;
+  }
+
+  .provenance {
+    border-top: 1px solid var(--hair);
+    padding: var(--s5) var(--s4) var(--s7);
+  }
+
+  .intro {
+    margin: 0 0 var(--s6);
+  }
+
+  .masthead {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "id"
+      "tools"
+      "nav";
+    max-width: none;
+  }
+
+  .masthead-tools {
+    justify-content: stretch;
+  }
+
+  .search {
+    flex: 1;
+    width: 100%;
+  }
+
+  .viewport {
+    height: 260px;
+  }
+
+  .colophon {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 30px;
+  }
+
+  .record {
+    padding: var(--s4) var(--s3) var(--s6);
+  }
+
+  .masthead {
+    padding-right: var(--s3);
+  }
+
+  .masthead-id {
+    padding: var(--s2) var(--s3);
+  }
+
+  .media-card {
+    grid-template-columns: 1fr;
+  }
+
+  .media-thumb-wrap {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+  .media-thumb {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+/* ============================================================
    Editorial layer — home, collections, story, screening room.
 
    One grid, two inks. The Moon sets its accent to steel, Mars to ember,

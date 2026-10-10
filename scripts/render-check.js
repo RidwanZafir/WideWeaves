@@ -647,7 +647,7 @@ async function main() {
   check("the written action survives a reload (real SQLite write)", persisted, `persisted=${persisted}`);
 
   // ---- narrow window ------------------------------------------------------
-  // The window's minWidth is 1024, so this is a width a user can actually reach.
+  // 1024px is the compact desktop: three columns survive, tightened.
   await run("document.querySelector('#record-list .row').click()");
   await sleep(400);
   win.setContentSize(1024, 800);
@@ -681,6 +681,55 @@ async function main() {
     "the next-action form is still reachable when narrow",
     reach.present && reach.top >= 0 && reach.top + reach.height <= reach.vh + 0.5,
     reach.present ? `top=${Math.round(reach.top)} h=${Math.round(reach.height)} vh=${reach.vh}` : "form missing"
+  );
+
+  win.setContentSize(1280, 820);
+  await sleep(300);
+
+  // ---- phone window -------------------------------------------------------
+  // Below 900px the shell stacks to a single page column — story first,
+  // archive second, provenance last — so the 380px floor is fully usable.
+  // The Moon collection is used here because every pixel it shows is
+  // vendored: nothing remote may load before the console audit below.
+  win.setContentSize(414, 850);
+  await sleep(600);
+
+  const phone = await run(`(() => {
+    var out = {
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      display: getComputedStyle(document.querySelector('.workspace')).display,
+      shelf: document.querySelectorAll('#rail-nav .rail-nav-btn').length,
+      storyWidth: 0
+    };
+    var story = document.querySelector('#record .record-inner') || document.querySelector('#record .intro');
+    out.storyWidth = story ? Math.round(story.getBoundingClientRect().width) : 0;
+    return out;
+  })()`);
+  check("no horizontal overflow on a phone-width window", phone.overflow <= 0, `overflow=${phone.overflow}px`);
+  check("the workspace stacks to a single column", phone.display === "flex", `display=${phone.display}`);
+  check("the rail shelf offers Archive plus both collections", phone.shelf === 3, `buttons=${phone.shelf}`);
+  check("the story stays legibly wide on a phone", phone.storyWidth >= 280, `${phone.storyWidth}px`);
+
+  await run(`(() => {
+    var b = document.querySelector('#rail-nav [data-world-jump="moon"]');
+    if (b) b.click();
+  })()`);
+  await sleep(500);
+  const phoneShelf = await run(`(() => {
+    var out = { rows: 0, title: '' };
+    out.rows = document.querySelectorAll('.collection-index .index-row').length;
+    var h2 = document.querySelector('#record h2');
+    out.title = h2 ? h2.textContent.trim() : '';
+    return out;
+  })()`);
+  check("the Moon collection opens its eight stories on a phone", phoneShelf.rows === 8, `rows=${phoneShelf.rows}`);
+
+  await run("document.querySelector('.collection-index .index-row').click()");
+  await sleep(500);
+  check(
+    "a shelf row opens its story on a phone",
+    (await run("document.querySelector('#record h2') ? document.querySelector('#record h2').textContent.trim() : ''")) === "Luna 2",
+    "story opens"
   );
 
   win.setContentSize(1280, 820);

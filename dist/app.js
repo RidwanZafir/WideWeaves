@@ -1504,6 +1504,7 @@
     renderProvenance();
     renderRail();
     renderCount();
+    updateRailNav();
     await renderReadout();
     markBooted();
   }
@@ -1715,8 +1716,45 @@
     });
   }
 
-  function bindSearch() {
-    if (!refs.search) return;
+    /* The rail's own shelf: Archive home plus one button per collection with
+     live counts. Chips filter; these travel — Archive goes home, a world
+     opens its collection view. */
+
+  function railNavCounts() {
+    var counts = { moon: 0, mars: 0 };
+    var list = state.allObjects || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].worldCode === "moon") counts.moon += 1;
+      else if (list[i].worldCode === "mars") counts.mars += 1;
+    }
+    return counts;
+  }
+
+  function buildRailNav() {
+    var nav = document.getElementById("rail-nav");
+    if (!nav) return;
+    var counts = railNavCounts();
+    nav.innerHTML =
+      '<p class="rail-nav-label">Collections</p>' +
+      '<button type="button" class="rail-nav-btn" data-go="home"><span>Archive</span></button>' +
+      '<button type="button" class="rail-nav-btn" data-world-jump="moon"><span>The Moon</span>' +
+      '<span class="rail-nav-count">' + counts.moon + "</span></button>" +
+      '<button type="button" class="rail-nav-btn" data-world-jump="mars"><span>Mars</span>' +
+      '<span class="rail-nav-count">' + counts.mars + "</span></button>";
+    updateRailNav();
+  }
+
+  function updateRailNav() {
+    var nav = document.getElementById("rail-nav");
+    if (!nav) return;
+    var home = nav.querySelector('[data-go="home"]');
+    if (home) home.setAttribute("aria-current", (!state.world && !state.record) ? "true" : "false");
+    Array.prototype.forEach.call(nav.querySelectorAll("[data-world-jump]"), function (btn) {
+      btn.setAttribute("aria-current", state.world === btn.getAttribute("data-world-jump") ? "true" : "false");
+    });
+  }
+
+  function bindSearch() {    if (!refs.search) return;
 
     refs.search.addEventListener("input", function () {
       var val = refs.search.value.trim();
@@ -1739,6 +1777,24 @@
   }
 
   function wireList() {
+    var rail = document.querySelector(".rail");
+    if (rail) {
+      // The shelf travels; the ledger rows below keep their own handler.
+      // [data-id] is deliberately ignored here so a row never opens twice.
+      rail.addEventListener("click", function (e) {
+        if (e.target.closest("[data-id]")) return;
+        var go = e.target.closest("[data-go]");
+        if (go) {
+          if (go.getAttribute("data-go") === "home") goHome();
+          else showCollection(go.getAttribute("data-world"));
+          return;
+        }
+        var jump = e.target.closest("[data-world-jump]");
+        if (jump) {
+          showCollection(jump.getAttribute("data-world-jump"));
+        }
+      });
+    }
     if (refs.list) {
       refs.list.addEventListener("click", function (e) {
         var row = e.target.closest("[data-id]");
@@ -1924,6 +1980,7 @@
     // rail cannot disagree with the database.
     await buildFilters();
     await buildCategoryFilters();
+    buildRailNav();
     await render();
   }
 

@@ -36,11 +36,16 @@ npm run preview
 
 ## What it is
 
-A curator's workspace, not a gallery. Three columns:
+A curator's workspace, not a gallery. Three columns on desktop, one page column
+on a phone (story first, archive second, provenance last; the window floor is
+380px):
 
 | Column | Job |
 |---|---|
-| **The archive** (left) | Everything, filterable by world and story kind, searchable down into *narratives*, not just titles. Colour encodes how well the location is known — with a key and a text equivalent. Previews carry subtitles and reading time; the full story lives in the record. |
+| **The archive** (left) | Collections shelf (Archive, Moon, Mars with live counts) plus everything, filterable by world and story kind, searchable down into *narratives*, not just titles. Colour encodes how well the location is known — with a key and a text equivalent. Previews carry subtitles and reading time; the full story lives in the record. |
+
+| Column | Job |
+|---|---|
 | **The record** (centre) | The object's life: what it is, **why it was abandoned**, what it taught, where it is now, how well we know that — plus the **complete written story** in sections, a hero image with credit, reading controls (text size, focus mode, progress), a **Listen to Story** browser-narration player (play/pause/resume/stop, 4 speeds, voice choice), and previous/next story navigation. |
 | **Provenance** (right) | Sources, who cares, and **what should happen next** — with a form that writes a real proposed action to SQLite. |
 
@@ -106,7 +111,7 @@ npm run package     # repack from the allowlist + assert the artifact
 npm run package:prove  # verify-only + boot the real .exe + asar asset check
 ```
 
-391 automated checks across nine harnesses, zero failures. The packaged
+397 automated checks across nine harnesses, zero failures. The packaged
 `dist/` is asserted byte-identical to the verified build, and the real
 executable is launched to confirm it comes up, seeds its archive, and serves
 every sprite and NASA image out of the archive at true size.
@@ -117,7 +122,7 @@ every sprite and NASA image out of the archive at true size.
 | `scripts/check-assets.js` | PNG stencil/tile contract for all 11 sprites (`--art` prints them as ASCII) | 44 |
 | `scripts/audit.js` | Trust boundary: LIKE wildcards, validation, orphans, foreign keys, field budget, migration | 42 |
 | `scripts/audit-window.js` | Real window: keyboard focus, failure notice, flat surfaces, boot-failure screen | 18 |
-| `scripts/render-check.js` | Real window: DOM, CSP, pixel contract, workflow, persistence, narrow window, 3D viewport, editorial theme, reader + narration + screening room | 113 |
+| `scripts/render-check.js` | Real window: DOM, CSP, pixel contract, workflow, persistence, narrow window, 3D viewport, editorial theme, responsive phone, reader + narration + screening room | 119 |
 | `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 76 |
 | `scripts/package.js --boot` | Real `.exe` boots, seeds every table, window titled | 7 |
 | `scripts/check-videos.js` | Seed-level film coverage: valid IDs, attribution, no reuse | 19 |
@@ -150,7 +155,7 @@ TALK_TRACK.md      # judge-facing talk track + 3-minute demo script
 ## Scope, honestly
 
 **Real:** schema, uncertainty model, workflow, write path, persistence,
-locked-down runtime, packaged Windows build, 391 checks.
+locked-down runtime, packaged Windows build, 397 checks.
 **Curated:** eighteen complete stories (8 Moon, 10 Mars) with full narratives,
 credible references, and preserved NASA/ESA photo and film links —
 a demonstration library, not a NASA feed. **Next:** wire the record shape to
