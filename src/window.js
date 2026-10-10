@@ -37,12 +37,10 @@ function createWindow(options = {}) {
   const win = new BrowserWindow({
     width,
     height,
-    // The shell stacks to a single phone-width column, so the floor is a
-    // phone (380px), not the old 1024px desktop minimum.
-    minWidth: 380,
-    minHeight: 600,
+    minWidth: 1024,
+    minHeight: 680,
     show: false,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0b0e14",
     // Belt and braces with Menu.setApplicationMenu(null): even if something
     // reintroduces a menu, this window will not present one.
     autoHideMenuBar: true,

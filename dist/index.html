@@ -10,7 +10,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'none'; script-src 'self' file:; style-src 'self' file:; img-src 'self' file: data: https://i.ytimg.com; frame-src https://www.youtube-nocookie.com; font-src 'self' file:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';"
     />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="dark" />
     <title>Abandoned but Not Forgotten</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -34,6 +34,8 @@
         <div class="masthead-tools">
           <!-- The archive's own size. The rail count reports the current view. -->
           <span class="readout" id="readout"></span>
+          <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
+          <div class="filter-set filter-set--cats" id="category-filters" role="group" aria-label="Filter by story kind"></div>
           <label class="search">              <span class="search-icon" aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="6" y="1" width="4" height="1.5" fill="currentColor" />
@@ -52,10 +54,6 @@
             />
           </label>
         </div>
-        <nav class="masthead-nav" aria-label="Collections and filters">
-          <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
-          <div class="filter-set filter-set--cats" id="category-filters" role="group" aria-label="Filter by story kind"></div>
-        </nav>
       </header>
 
       <main class="workspace">
@@ -64,7 +62,6 @@
             <h2>The archive</h2>
             <span class="rail-count" id="rail-count"></span>
           </div>
-          <nav class="rail-nav" id="rail-nav" aria-label="Collections"></nav>
           <p class="rail-note" id="rail-note" hidden></p>
           <ul class="record-list" id="record-list"></ul>
           <p class="rail-empty" id="rail-empty" hidden>
@@ -89,11 +86,6 @@
 
         <aside class="provenance" id="provenance" aria-label="Provenance and next actions"></aside>
       </main>
-
-      <footer class="colophon">
-        Abandoned but Not Forgotten
-        <span>A curatorial archive of the hardware we left on the Moon and Mars.</span>
-      </footer>
     </div>
 
     <script src="scene.bundle.js"></script>

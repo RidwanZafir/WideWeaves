@@ -200,7 +200,7 @@ async function main() {
       threeCol: getComputedStyle(document.querySelector('.workspace')).gridTemplateColumns.split(' ').length
     };
   })()`);
-  check("stylesheet applied (paper canvas)", styled.bg === "rgb(255, 255, 255)", styled.bg);
+  check("stylesheet applied (body background is the void token)", styled.bg === "rgb(7, 9, 16)", styled.bg);
   check("stylesheet applied (serif/sans stack present)", /Iowan|Palatino|Georgia|Inter|Segoe/i.test(styled.font), styled.font);
   check("three-column workspace layout is live", styled.threeCol === 3, `tracks=${styled.threeCol}`);
   check("rail rows have real layout height", styled.rowHeight > 30, `h=${styled.rowHeight}`);
@@ -217,9 +217,9 @@ async function main() {
     "fallback visible, viewport hidden"
   );
 
-  // ---- the light editorial contract --------------------------------------
-  // Monochrome paper, hairlines instead of shadows, pill controls, 6px
-  // cards and images — asserted here rather than trusted to the stylesheet.
+  // ---- the flat / pixel contract -----------------------------------------
+  // "No gradients, and make it pixel art" is a requirement about the rendered
+  // document, so it is asserted here rather than trusted to the stylesheet.
   const flat = await run(`(() => {
     const offenders = [];
     document.querySelectorAll('body *').forEach((el) => {
@@ -232,25 +232,15 @@ async function main() {
   })()`);
   check("every surface is flat (no gradient fills)", flat.length === 0, flat.slice(0, 3).join(" | ") || "flat");
 
-  const pillRadius = function () {
-    const els = Array.from(document.querySelectorAll('.btn, .chip, .toolbtn, .search'));
-    if (!els.length) return 'none present';
-    const bad = els.filter((el) => {
+  const rounded = await run(`(() => {
+    const offenders = [];
+    document.querySelectorAll('body *').forEach((el) => {
       const r = getComputedStyle(el).borderTopLeftRadius;
-      const v = parseFloat(r);
-      return !(r.indexOf('9999px') !== -1 || v >= 100);
+      if (r && r !== '0px') offenders.push((el.className || el.tagName) + '=' + r);
     });
-    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'pills';
-  };
-  check("controls share the pill geometry", await run(`(${pillRadius.toString()})()`), "pills");
-
-  const cardRadius = function () {
-    const els = Array.from(document.querySelectorAll('.media-thumb-wrap, .video-thumb-wrap, .feature-thumb, .hero-img, .record-notice'));
-    if (!els.length) return 'none present';
-    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '6px');
-    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'cards-6px';
-  };
-  check("cards and images use the 6px radius", await run(`(${cardRadius.toString()})()`), "cards-6px");
+    return offenders;
+  })()`);
+  check("every corner is a hard pixel edge", rounded.length === 0, rounded.slice(0, 3).join(" | ") || "square");
 
   const assets = await run(`(async () => {
     const files = ['ground-moon.png', 'ground-mars.png', 'dither.png', 'stake.png', 'cancel.png', 'site-plan.png'];
@@ -647,7 +637,7 @@ async function main() {
   check("the written action survives a reload (real SQLite write)", persisted, `persisted=${persisted}`);
 
   // ---- narrow window ------------------------------------------------------
-  // 1024px is the compact desktop: three columns survive, tightened.
+  // The window's minWidth is 1024, so this is a width a user can actually reach.
   await run("document.querySelector('#record-list .row').click()");
   await sleep(400);
   win.setContentSize(1024, 800);
@@ -681,55 +671,6 @@ async function main() {
     "the next-action form is still reachable when narrow",
     reach.present && reach.top >= 0 && reach.top + reach.height <= reach.vh + 0.5,
     reach.present ? `top=${Math.round(reach.top)} h=${Math.round(reach.height)} vh=${reach.vh}` : "form missing"
-  );
-
-  win.setContentSize(1280, 820);
-  await sleep(300);
-
-  // ---- phone window -------------------------------------------------------
-  // Below 900px the shell stacks to a single page column — story first,
-  // archive second, provenance last — so the 380px floor is fully usable.
-  // The Moon collection is used here because every pixel it shows is
-  // vendored: nothing remote may load before the console audit below.
-  win.setContentSize(414, 850);
-  await sleep(600);
-
-  const phone = await run(`(() => {
-    var out = {
-      overflow: document.documentElement.scrollWidth - window.innerWidth,
-      display: getComputedStyle(document.querySelector('.workspace')).display,
-      shelf: document.querySelectorAll('#rail-nav .rail-nav-btn').length,
-      storyWidth: 0
-    };
-    var story = document.querySelector('#record .record-inner') || document.querySelector('#record .intro');
-    out.storyWidth = story ? Math.round(story.getBoundingClientRect().width) : 0;
-    return out;
-  })()`);
-  check("no horizontal overflow on a phone-width window", phone.overflow <= 0, `overflow=${phone.overflow}px`);
-  check("the workspace stacks to a single column", phone.display === "flex", `display=${phone.display}`);
-  check("the rail shelf offers Archive plus both collections", phone.shelf === 3, `buttons=${phone.shelf}`);
-  check("the story stays legibly wide on a phone", phone.storyWidth >= 280, `${phone.storyWidth}px`);
-
-  await run(`(() => {
-    var b = document.querySelector('#rail-nav [data-world-jump="moon"]');
-    if (b) b.click();
-  })()`);
-  await sleep(500);
-  const phoneShelf = await run(`(() => {
-    var out = { rows: 0, title: '' };
-    out.rows = document.querySelectorAll('.collection-index .index-row').length;
-    var h2 = document.querySelector('#record h2');
-    out.title = h2 ? h2.textContent.trim() : '';
-    return out;
-  })()`);
-  check("the Moon collection opens its eight stories on a phone", phoneShelf.rows === 8, `rows=${phoneShelf.rows}`);
-
-  await run("document.querySelector('.collection-index .index-row').click()");
-  await sleep(500);
-  check(
-    "a shelf row opens its story on a phone",
-    (await run("document.querySelector('#record h2') ? document.querySelector('#record h2').textContent.trim() : ''")) === "Luna 2",
-    "story opens"
   );
 
   win.setContentSize(1280, 820);
