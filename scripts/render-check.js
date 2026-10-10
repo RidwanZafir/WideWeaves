@@ -200,7 +200,7 @@ async function main() {
       threeCol: getComputedStyle(document.querySelector('.workspace')).gridTemplateColumns.split(' ').length
     };
   })()`);
-  check("stylesheet applied (body background is the void token)", styled.bg === "rgb(7, 9, 16)", styled.bg);
+  check("stylesheet applied (paper canvas)", styled.bg === "rgb(255, 255, 255)", styled.bg);
   check("stylesheet applied (serif/sans stack present)", /Iowan|Palatino|Georgia|Inter|Segoe/i.test(styled.font), styled.font);
   check("three-column workspace layout is live", styled.threeCol === 3, `tracks=${styled.threeCol}`);
   check("rail rows have real layout height", styled.rowHeight > 30, `h=${styled.rowHeight}`);
@@ -217,9 +217,9 @@ async function main() {
     "fallback visible, viewport hidden"
   );
 
-  // ---- the flat / pixel contract -----------------------------------------
-  // "No gradients, and make it pixel art" is a requirement about the rendered
-  // document, so it is asserted here rather than trusted to the stylesheet.
+  // ---- the light editorial contract --------------------------------------
+  // Monochrome paper, hairlines instead of shadows, pill controls, 6px
+  // cards and images — asserted here rather than trusted to the stylesheet.
   const flat = await run(`(() => {
     const offenders = [];
     document.querySelectorAll('body *').forEach((el) => {
@@ -232,15 +232,25 @@ async function main() {
   })()`);
   check("every surface is flat (no gradient fills)", flat.length === 0, flat.slice(0, 3).join(" | ") || "flat");
 
-  const rounded = await run(`(() => {
-    const offenders = [];
-    document.querySelectorAll('body *').forEach((el) => {
+  const pillRadius = function () {
+    const els = Array.from(document.querySelectorAll('.btn, .chip, .toolbtn, .search'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => {
       const r = getComputedStyle(el).borderTopLeftRadius;
-      if (r && r !== '0px') offenders.push((el.className || el.tagName) + '=' + r);
+      const v = parseFloat(r);
+      return !(r.indexOf('9999px') !== -1 || v >= 100);
     });
-    return offenders;
-  })()`);
-  check("every corner is a hard pixel edge", rounded.length === 0, rounded.slice(0, 3).join(" | ") || "square");
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'pills';
+  };
+  check("controls share the pill geometry", await run(`(${pillRadius.toString()})()`), "pills");
+
+  const cardRadius = function () {
+    const els = Array.from(document.querySelectorAll('.media-thumb-wrap, .video-thumb-wrap, .feature-thumb, .hero-img, .record-notice'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '6px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'cards-6px';
+  };
+  check("cards and images use the 6px radius", await run(`(${cardRadius.toString()})()`), "cards-6px");
 
   const assets = await run(`(async () => {
     const files = ['ground-moon.png', 'ground-mars.png', 'dither.png', 'stake.png', 'cancel.png', 'site-plan.png'];

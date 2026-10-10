@@ -40,7 +40,7 @@ function createWindow(options = {}) {
     minWidth: 1024,
     minHeight: 680,
     show: false,
-    backgroundColor: "#0b0e14",
+    backgroundColor: "#ffffff",
     // Belt and braces with Menu.setApplicationMenu(null): even if something
     // reintroduces a menu, this window will not present one.
     autoHideMenuBar: true,

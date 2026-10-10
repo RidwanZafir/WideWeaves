@@ -175,8 +175,8 @@ async function main() {
     check("a second record existed to remove", false, "only one row in the rail");
   }
 
-  /* ---- 3. the new surfaces obey the flat contract -------------------------- */
-  console.log("\n== the new notice surfaces obey the flat design contract ==");
+  /* ---- 3. the new surfaces obey the light editorial contract ---------------- */
+  console.log("\n== the new notice surfaces obey the light editorial contract ==");
 
   const style = await run(`(() => {
     const el = document.querySelector('.record-notice');
@@ -202,7 +202,7 @@ async function main() {
 
   check("the notice is on screen to measure", style.present);
   if (style.present) {
-    check("the notice has hard pixel edges", style.radius === "0px", style.radius);
+    check("the notice uses the 6px card geometry", style.radius === "6px", style.radius);
     check("the notice has no gradient", style.gradient === "none", style.gradient);
     check("the notice text clears AA", style.contrast >= 4.5, style.contrast + ":1");
     check("the notice is marked by an edge, not a glow", style.borderLeft.indexOf("3px") === 0, style.borderLeft);

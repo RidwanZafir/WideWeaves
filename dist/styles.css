@@ -2296,6 +2296,376 @@ body.reading-focus .record {
 }
 
 /* ============================================================
+   Light editorial theme — research-lab notebook.
+
+   A monochrome paper/obsidian/hairline system layered over the archive's
+   original dark instrument tokens. Token NAMES below are legacy (void,
+   paper, ember…); their VALUES are the new system, so every component
+   follows without touching the DOM. Deliberate deviations from the
+   reference are marked [note].
+
+   [note] Certainty dots keep their four muted tones: they are labeled
+   data encoding, never decoration, and each always travels with text.
+   [note] The viewport, map tiles, and sprite masks stay as authored
+   imagery — the dark exhibit inside the light page.
+   [note] Keyboard focus rings stay visible (2px obsidian); the reference
+   omits them, accessibility does not.
+   [note] Mono survives for instrument labels (codes, counts, timestamps).
+   ============================================================ */
+
+:root {
+  /* ---- canvas: paper, ash, hairline ---- */
+  --void: #ffffff;
+  --surface: #ffffff;
+  --raised: #f1f1f1;
+  --raised-2: #f1f1f1;
+  --hair: rgba(0, 0, 0, 0.12);
+  --hair-strong: rgba(0, 0, 0, 0.2);
+
+  /* ---- the record sheet: the same paper ---- */
+  --warm-void: #ffffff;
+  --warm-raised: #ffffff;
+  --warm-hair: rgba(0, 0, 0, 0.12);
+
+  /* ---- type: obsidian, graphite, smoke ---- */
+  --paper: #000000;
+  --paper-dim: #333333;
+  --warm-faint: #666666;
+  --steel: #000000;
+  --steel-dim: #666666;
+  --steel-faint: rgba(0, 0, 0, 0.12);
+
+  /* ---- the single ink: obsidian fills, hairlines divide ---- */
+  --ember: #000000;
+  --ember-bright: #000000;
+  --ember-dim: rgba(0, 0, 0, 0.06);
+
+  /* ---- certainty tones, darkened to read on paper ---- */
+  --c-high: #2e7d4f;
+  --c-medium: #8a6d1f;
+  --c-variable: #5b6b82;
+  --c-low: #b0563f;
+
+  /* ---- one sans for everything; mono stays for instruments ---- */
+  --serif: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Both worlds share one ink now; the override below only neutralizes the
+   older per-world accent so Moon and Mars read as one archive. */
+[data-world="moon"] {
+  --ember: #000000;
+  --ember-bright: #000000;
+  --ember-dim: rgba(0, 0, 0, 0.06);
+}
+
+body {
+  font-size: 14px;
+}
+
+/* ---- masthead: a 64px top bar, separated by space ---- */
+
+.masthead {
+  min-height: 64px;
+  align-items: center;
+  border-bottom: 0;
+  padding-top: var(--s2);
+  padding-bottom: var(--s2);
+}
+
+.workspace {
+  border-top: 0;
+}
+
+.masthead h1 {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.masthead-id {
+  border-right: 0;
+}
+
+/* ---- pills: chips, buttons, inputs share one geometry ---- */
+
+.chip,
+.toolbtn,
+.btn,
+.nav-btn,
+.narr-main {
+  border-radius: 9999px;
+}
+
+.chip {
+  box-shadow: none;
+  border: 1px solid var(--hair);
+  font-size: 14px;
+  font-weight: 500;
+  height: 34px;
+  padding: 0 20px;
+}
+
+.chip:hover {
+  background: var(--raised);
+}
+
+.chip[aria-pressed="true"] {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.chip--cat {
+  height: 30px;
+  font-size: 13px;
+}
+
+.filter-set {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+.btn {
+  width: 100%;
+  background: #000000;
+  border: 1px solid #000000;
+  color: #ffffff;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 8px 20px;
+}
+
+.btn:hover {
+  background: #333333;
+  border-color: #333333;
+}
+
+.toolbtn {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 16px;
+}
+
+.toolbtn[aria-pressed="true"] {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+.nav-btn {
+  align-items: center;
+  text-align: center;
+}
+
+.search {
+  border-radius: 9999px;
+  height: 42px;
+}
+
+.search input {
+  font-size: 16px;
+}
+
+.narr-field select,
+.field input {
+  border-radius: 9999px;
+}
+
+.field textarea {
+  border-radius: 6px;
+}
+
+.skip {
+  border-radius: 9999px;
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ---- type scale: display, heading, subhead, body ---- */
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
+}
+
+.record h2,
+.collection h2 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.21;
+  letter-spacing: 0.31px;
+}
+
+.feature-title {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.26;
+  letter-spacing: -0.01em;
+}
+
+.collection-card h3 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.index-title {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.index-row:hover .index-title {
+  color: #000000;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.media-card:hover .media-title {
+  color: #000000;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.story p,
+.block p,
+.feature-summary,
+.hero-lede {
+  font-size: 17px;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+}
+
+.lede,
+.standfirst {
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.block-label,
+.watch-label,
+.featured-label,
+.media-label,
+.panel-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666666;
+}
+
+/* Section anchors use space, not bars. */
+.block-label::before,
+.watch-label::before,
+.media-label::before {
+  display: none;
+}
+
+/* ---- 6px geometry for cards, panels, images ---- */
+
+.media-thumb-wrap,
+.video-thumb-wrap,
+.feature-thumb,
+.hero-img,
+.narr,
+.block--lesson,
+.record-notice,
+.form-error,
+.collection-card {
+  border-radius: 6px;
+}
+
+.media-thumb-wrap,
+.video-thumb-wrap,
+.video-stage {
+  overflow: hidden;
+}
+
+.video-stage {
+  border-radius: 6px;
+}
+
+.collections {
+  border: 0;
+  gap: var(--s4);
+}
+
+.collection-card {
+  border: 1px solid var(--hair);
+}
+
+.collection-card + .collection-card {
+  border-left: 1px solid var(--hair);
+}
+
+/* ---- evidence and film imagery ---- */
+
+.media-thumb,
+.video-thumb {
+  border-radius: 0;
+}
+
+.hero-caption {
+  border-bottom: 0;
+}
+
+/* ---- scrollbars, boot blocks, colophon ---- */
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border: 3px solid #ffffff;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b5b5b5;
+}
+
+.record::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-color: #ffffff;
+}
+
+.record::-webkit-scrollbar-thumb:hover {
+  background: #b5b5b5;
+}
+
+.colophon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s5);
+  align-items: baseline;
+  padding: var(--s4) var(--s5);
+  border-top: 1px solid var(--hair);
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.colophon span {
+  color: #666666;
+  font-weight: 400;
+}
+
+.app {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+@media (max-width: 1180px) {
+  .hero-title {
+    font-size: 36px;
+  }
+}
+
+/* ============================================================
    Editorial layer — home, collections, story, screening room.
 
    One grid, two inks. The Moon sets its accent to steel, Mars to ember,
