@@ -142,9 +142,9 @@ async function main() {
     await run("Object.keys(window.archive || {}).join(',')")
   );
 
-  // ---- boot: masthead, filters, rail --------------------------------------
+  // ---- boot: topbar, filters, ledger --------------------------------------
   check(
-    "masthead rendered",
+    "topbar rendered",
     (await run("document.querySelector('h1') && document.querySelector('h1').textContent.trim()")) ===
       "Abandoned but Not Forgotten",
     await run("document.querySelector('h1').textContent.trim()")
@@ -197,12 +197,12 @@ async function main() {
       bg: body.backgroundColor,
       font: body.fontFamily,
       rowHeight: row ? Math.round(row.getBoundingClientRect().height) : 0,
-      threeCol: getComputedStyle(document.querySelector('.workspace')).gridTemplateColumns.split(' ').length
+      flow: getComputedStyle(document.querySelector('.workspace')).display
     };
   })()`);
-  check("stylesheet applied (body background is the void token)", styled.bg === "rgb(7, 9, 16)", styled.bg);
+  check("stylesheet applied (void canvas)", styled.bg === "rgb(0, 0, 0)", styled.bg);
   check("stylesheet applied (serif/sans stack present)", /Iowan|Palatino|Georgia|Inter|Segoe/i.test(styled.font), styled.font);
-  check("three-column workspace layout is live", styled.threeCol === 3, `tracks=${styled.threeCol}`);
+  check("single-column mission flow is live", styled.flow === "block", `display=${styled.flow}`);
   check("rail rows have real layout height", styled.rowHeight > 30, `h=${styled.rowHeight}`);
 
   // ---- intro state before any selection ----------------------------------
@@ -217,9 +217,10 @@ async function main() {
     "fallback visible, viewport hidden"
   );
 
-  // ---- the flat / pixel contract -----------------------------------------
-  // "No gradients, and make it pixel art" is a requirement about the rendered
-  // document, so it is asserted here rather than trusted to the stylesheet.
+  // ---- the mission-control contract --------------------------------------
+  // Void black, hairline outlines, ghost buttons (4px, never filled), pill
+  // toggles (32px), raw-edged imagery, zero elevation — asserted here
+  // rather than trusted to the stylesheet.
   const flat = await run(`(() => {
     const offenders = [];
     document.querySelectorAll('body *').forEach((el) => {
@@ -232,15 +233,48 @@ async function main() {
   })()`);
   check("every surface is flat (no gradient fills)", flat.length === 0, flat.slice(0, 3).join(" | ") || "flat");
 
-  const rounded = await run(`(() => {
-    const offenders = [];
-    document.querySelectorAll('body *').forEach((el) => {
-      const r = getComputedStyle(el).borderTopLeftRadius;
-      if (r && r !== '0px') offenders.push((el.className || el.tagName) + '=' + r);
+  const ghostRadius = function () {
+    const els = Array.from(document.querySelectorAll('.btn, .toolbtn'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '4px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'ghosts-4px';
+  };
+  check("actions are 4px ghost outlines", await run(`(${ghostRadius.toString()})()`), "ghosts-4px");
+
+  const toggleRadius = function () {
+    const els = Array.from(document.querySelectorAll('.chip'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '32px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'toggles-32px';
+  };
+  check("filter toggles share the 32px pill", await run(`(${toggleRadius.toString()})()`), "toggles-32px");
+
+  const searchPill = function () {
+    const el = document.querySelector('.search');
+    if (!el) return 'none present';
+    const v = parseFloat(getComputedStyle(el).borderTopLeftRadius);
+    return v >= 100 ? 'search-pill' : 'search=' + getComputedStyle(el).borderTopLeftRadius;
+  };
+  check("search is the pill input", await run(`(${searchPill.toString()})()`), "search-pill");
+
+  const rawEdges = function () {
+    const els = Array.from(document.querySelectorAll('.feature-thumb'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '0px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'raw-edges';
+  };
+  check("imagery stays raw-edged", await run(`(${rawEdges.toString()})()`), "raw-edges");
+
+  const noElevation = function () {
+    const els = Array.from(document.querySelectorAll('.btn, .chip, .toolbtn, .feature'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => {
+      const s = getComputedStyle(el).boxShadow;
+      return s && s !== 'none';
     });
-    return offenders;
-  })()`);
-  check("every corner is a hard pixel edge", rounded.length === 0, rounded.slice(0, 3).join(" | ") || "square");
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'no-shadows';
+  };
+  check("zero elevation vocabulary", await run(`(${noElevation.toString()})()`), "no-shadows");
 
   const assets = await run(`(async () => {
     const files = ['ground-moon.png', 'ground-mars.png', 'dither.png', 'stake.png', 'cancel.png', 'site-plan.png'];
@@ -671,6 +705,51 @@ async function main() {
     "the next-action form is still reachable when narrow",
     reach.present && reach.top >= 0 && reach.top + reach.height <= reach.vh + 0.5,
     reach.present ? `top=${Math.round(reach.top)} h=${Math.round(reach.height)} vh=${reach.vh}` : "form missing"
+  );
+
+  win.setContentSize(1280, 820);
+  await sleep(300);
+
+  // ---- phone window -------------------------------------------------------
+  // The 400px floor is fully usable: the flow is already single-column, so
+  // this proves the topnav journey and shelf rows, not a separate layout.
+  // The Moon collection is used because every pixel it shows is vendored:
+  // nothing remote may load before the console audit below.
+  win.setContentSize(414, 850);
+  await sleep(600);
+
+  const phone = await run(`(() => {
+    var out = {
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+      nav: document.querySelectorAll('.topnav button').length,
+      storyWidth: 0
+    };
+    var story = document.querySelector('#record .record-inner') || document.querySelector('#record .intro');
+    out.storyWidth = story ? Math.round(story.getBoundingClientRect().width) : 0;
+    return out;
+  })()`);
+  check("no horizontal overflow on a phone-width window", phone.overflow <= 0, `overflow=${phone.overflow}px`);
+  check("the topnav offers Missions plus both collections", phone.nav === 3, `buttons=${phone.nav}`);
+  check("the story stays legibly wide on a phone", phone.storyWidth >= 280, `${phone.storyWidth}px`);
+
+  await run(`(() => {
+    var b = document.querySelector('.topnav [data-world-jump="moon"]');
+    if (b) b.click();
+  })()`);
+  await sleep(500);
+  const phoneShelf = await run(`(() => {
+    var out = { rows: 0 };
+    out.rows = document.querySelectorAll('.collection-index .index-row').length;
+    return out;
+  })()`);
+  check("the Moon collection opens its eight stories on a phone", phoneShelf.rows === 8, `rows=${phoneShelf.rows}`);
+
+  await run("document.querySelector('.collection-index .index-row').click()");
+  await sleep(500);
+  check(
+    "a shelf row opens its story on a phone",
+    (await run("document.querySelector('#record h2') ? document.querySelector('#record h2').textContent.trim() : ''")) === "Luna 2",
+    "story opens"
   );
 
   win.setContentSize(1280, 820);

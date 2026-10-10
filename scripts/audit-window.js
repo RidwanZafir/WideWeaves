@@ -202,7 +202,7 @@ async function main() {
 
   check("the notice is on screen to measure", style.present);
   if (style.present) {
-    check("the notice has hard pixel edges", style.radius === "0px", style.radius);
+    check("the notice uses no card geometry", style.radius === "0px", style.radius);
     check("the notice has no gradient", style.gradient === "none", style.gradient);
     check("the notice text clears AA", style.contrast >= 4.5, style.contrast + ":1");
     check("the notice is marked by an edge, not a glow", style.borderLeft.indexOf("3px") === 0, style.borderLeft);

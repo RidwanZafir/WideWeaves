@@ -2752,3 +2752,685 @@ img[data-gone="true"] {
     transition: none;
   }
 }
+
+/* ============================================================
+   Mission-control theme — cinematic darkness (SpaceX reference).
+
+   Void-black canvas, star-white technical type, hairline outlines,
+   ghost buttons (4px, never filled), pill toggles (32px), tracked
+   uppercase instrument labels, full-bleed viewport hero with overlay
+   text, single-column flow. Token NAMES below are legacy (void,
+   paper, ember…); their VALUES are the new system.
+
+   Deliberate deviations, marked [note]:
+   [note] Certainty dots keep four muted tones: labeled data encoding
+   that always travels with text, never decoration.
+   [note] Keyboard focus rings stay visible (2px star-white); the
+   reference omits them, accessibility does not.
+   [note] Long narrative prose uses the reference 13px/1.7/0.10em voice
+   at a 500px measure; monospace survives for instrument readouts.
+   ============================================================ */
+
+:root {
+  /* ---- canvas: void, image bleed, gunmetal dividers ---- */
+  --void: #000000;
+  --surface: #000000;
+  --raised: rgba(240, 240, 250, 0.06);
+  --raised-2: rgba(240, 240, 250, 0.1);
+  --hair: #404040;
+  --hair-strong: #545457;
+
+  /* ---- the record sheet is the same void: no elevated layer ---- */
+  --warm-void: #000000;
+  --warm-raised: #000000;
+  --warm-hair: #404040;
+
+  /* ---- type: star white, with dim steel reserved for dividers ---- */
+  --paper: #f0f0fa;
+  --paper-dim: #f0f0fa;
+  --warm-faint: #9a9aa5;
+  --steel: #f0f0fa;
+  --steel-dim: #9a9aa5;
+  --steel-faint: #404040;
+
+  /* ---- the single ink: outlines, ticks, fills-as-ink ---- */
+  --ember: #f0f0fa;
+  --ember-bright: #f0f0fa;
+  --ember-dim: rgba(240, 240, 250, 0.08);
+
+  /* ---- certainty tones, brightened to read on black ---- */
+  --c-high: #7fd79a;
+  --c-medium: #e0bd63;
+  --c-variable: #9fb2cc;
+  --c-low: #d6927f;
+
+  /* ---- one industrial sans everywhere; mono keeps instruments ---- */
+  --serif: "Barlow", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --sans: "Barlow", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Both worlds share one ink; neutralize the older per-world accent. */
+[data-world="moon"] {
+  --ember: #f0f0fa;
+  --ember-bright: #f0f0fa;
+  --ember-dim: rgba(240, 240, 250, 0.08);
+}
+
+body {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---- topbar: naked on the void, wordmark left, nav right ---- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s4) var(--s5);
+  min-height: 64px;
+  padding: var(--s2) var(--s5);
+  background: #000000;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-width: 0;
+}
+
+.brand .mark {
+  width: 28px;
+  height: 28px;
+  -webkit-mask-size: 28px 28px;
+  mask-size: 28px 28px;
+}
+
+.brand h1 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.topnav button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f0f0fa;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.topnav button:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.topnav button[aria-current="true"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.toputil {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.readout {
+  border: 1px solid #545457;
+  border-radius: 4px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+/* ---- filterbar: tag-chip rows under the bar ---- */
+
+.filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s5);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--s3) var(--s5);
+}
+
+.filterbar .filter-set--cats {
+  flex-basis: auto;
+}
+
+/* ---- single-column flow: one measure, story first ---- */
+
+.app {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.workspace {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--s5) 60px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.record,
+.ledger,
+.provenance {
+  overflow: visible;
+  border: 0;
+}
+
+.ledger {
+  margin-top: 60px;
+}
+
+.provenance {
+  margin-top: 60px;
+  padding-bottom: var(--s9);
+}
+
+.colophon {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  justify-content: flex-start;
+  border-top: 1px solid #404040;
+}
+
+/* ---- ghost buttons (4px, never filled) + pill toggles (32px) ---- */
+
+.btn,
+.toolbtn,
+.nav-btn {
+  border-radius: 4px;
+}
+
+.btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #f0f0fa;
+  color: #f0f0fa;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.btn:hover {
+  background: rgba(240, 240, 250, 0.08);
+  border-color: #f0f0fa;
+}
+
+.btn:active {
+  transform: none;
+}
+
+.toolbtn {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid #545457;
+  color: #f0f0fa;
+}
+
+.toolbtn:hover {
+  border-color: #f0f0fa;
+  color: #f0f0fa;
+}
+
+.toolbtn[aria-pressed="true"] {
+  background: rgba(240, 240, 250, 0.08);
+  border-color: #f0f0fa;
+  color: #f0f0fa;
+}
+
+.chip {
+  border-radius: 32px;
+  box-shadow: none;
+  border: 1px solid #545457;
+  background: transparent;
+  color: #9a9aa5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  height: 34px;
+  padding: 0 20px;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.chip:hover {
+  border-color: #f0f0fa;
+  color: #f0f0fa;
+  background: transparent;
+}
+
+.chip[aria-pressed="true"] {
+  background: rgba(240, 240, 250, 0.08);
+  border-color: #f0f0fa;
+  color: #f0f0fa;
+  box-shadow: none;
+}
+
+.chip--cat {
+  height: 30px;
+}
+
+.search {
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid #545457;
+  height: 40px;
+}
+
+.search:focus-within {
+  border-color: #f0f0fa;
+  background: transparent;
+}
+
+.search input {
+  font-size: 16px;
+  color: #f0f0fa;
+}
+
+.narr-field select,
+.field input,
+.field textarea {
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid #545457;
+  color: #f0f0fa;
+  font-size: 13px;
+}
+
+.field input:focus,
+.field textarea:focus,
+.narr-field select:focus-visible {
+  border-color: #f0f0fa;
+}
+
+.skip {
+  background: #f0f0fa;
+  color: #000000;
+  border-radius: 4px;
+}
+
+/* ---- tracked instrument type for every label ---- */
+
+.eyebrow,
+.hero-eyebrow,
+.collection-eyebrow,
+.feature-kicker,
+.featured-label,
+.block-label,
+.watch-label,
+.media-label,
+.panel-label,
+.read-toolbar-label,
+.rail-nav-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f0f0fa;
+}
+
+.block-label::before,
+.watch-label::before,
+.media-label::before {
+  display: none;
+}
+
+.rail-head h2 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f0f0fa;
+}
+
+.read-meta,
+.index-meta,
+.row-meta,
+.record-facts,
+.video-channel,
+.narr-meta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.story h3 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---- headlines: the loudest element on any screen ---- */
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.record h2,
+.collection h2 {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.collection-card h3,
+.feature-title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.index-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.media-title,
+.video-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.index-row:hover .index-title,
+.media-card:hover .media-title {
+  color: #f0f0fa;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- prose: the tracked 13px voice, held to a 500px measure ---- */
+
+.story p,
+.block p {
+  font-size: 13px;
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  color: #f0f0fa;
+}
+
+.narrative {
+  max-width: 500px;
+}
+
+.lede,
+.standfirst {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  max-width: 500px;
+}
+
+.feature-sub,
+.feature-summary,
+.index-sub,
+.video-caption,
+.media-caption,
+.hero-fig figcaption {
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+}
+
+.hero-lede {
+  font-size: 13px;
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  max-width: 450px;
+}
+
+.pull {
+  border-left: 2px solid #f0f0fa;
+}
+
+.pull p {
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.why-line {
+  border-left: 2px solid #f0f0fa;
+}
+
+/* ---- full-bleed hero: text over the viewport ---- */
+
+.intro {
+  margin: 0;
+}
+
+.viewport-wrap {
+  margin: 0 -24px;
+}
+
+.viewport {
+  height: 412px;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  max-width: 480px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hero-actions .btn {
+  width: auto;
+}
+
+.hero-caption {
+  padding-left: 0;
+  padding-right: 0;
+  border-bottom: 0;
+  margin-bottom: 60px;
+}
+
+/* ---- unboxed sections: hairlines, never fills ---- */
+
+.collections {
+  border: 0;
+  gap: 0;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 60px;
+}
+
+.collection-card {
+  background: none;
+  border: 0;
+  border-top: 1px solid #404040;
+  border-radius: 0;
+  padding: var(--s5) 0;
+}
+
+.collection-card + .collection-card {
+  border-left: 0;
+}
+
+.collection-card[data-world="moon"] {
+  background: none;
+}
+
+.collection-card p {
+  max-width: 500px;
+}
+
+.narr,
+.block--lesson {
+  background: none;
+  border: 0;
+  border-top: 1px solid #404040;
+  border-radius: 0;
+}
+
+.record-notice,
+.form-error {
+  background: none;
+  border: 0;
+  border-left: 3px solid var(--c-low);
+  border-radius: 0;
+}
+
+.crumbs {
+  border-bottom: 1px solid #404040;
+}
+
+.crumbs button {
+  color: #9a9aa5;
+  text-decoration: none;
+}
+
+.crumbs button:hover {
+  color: #f0f0fa;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.record-nav {
+  border-top: 1px solid #404040;
+}
+
+/* ---- raw-edged imagery ---- */
+
+.media-thumb-wrap,
+.video-thumb-wrap,
+.video-stage,
+.feature-thumb,
+.hero-img {
+  border-radius: 0;
+}
+
+.feature-thumb,
+.hero-img {
+  border: 0;
+}
+
+.video-thumb-wrap,
+.video-stage {
+  border: 1px solid #404040;
+}
+
+.hero-fig {
+  border: 0;
+}
+
+/* ---- focus stays visible on black ---- */
+
+.skip:focus,
+.toolbtn:focus-visible,
+.chip:focus-visible,
+.btn:focus-visible,
+.nav-btn:focus-visible,
+.narr-field select:focus-visible,
+.topnav button:focus-visible,
+.crumbs button:focus-visible,
+.index-row:focus-visible,
+.video-facade:focus-visible,
+.collection-card .btn:focus-visible,
+.feature .toolbtn:focus-visible {
+  outline: 2px solid #f0f0fa;
+  outline-offset: 2px;
+}
+
+/* ---- narrow viewports: bar stacks, overlay lands ---- */
+
+@media (max-width: 900px) {
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: var(--s2);
+    padding: var(--s3) var(--s4);
+  }
+
+  .topnav {
+    justify-content: flex-start;
+    order: 3;
+  }
+
+  .toputil {
+    width: 100%;
+  }
+
+  .filterbar {
+    padding: var(--s2) var(--s4);
+  }
+
+  .workspace {
+    padding: 0 var(--s4) 60px;
+  }
+
+  .viewport-wrap {
+    margin: 0 -16px;
+  }
+
+  .hero-overlay {
+    position: static;
+    max-width: none;
+    padding: 24px 0 0;
+  }
+
+  .hero-title,
+  .record h2,
+  .collection h2 {
+    font-size: 32px;
+  }
+}

@@ -37,10 +37,11 @@ function createWindow(options = {}) {
   const win = new BrowserWindow({
     width,
     height,
-    minWidth: 1024,
-    minHeight: 680,
+    // Single-column flow works at any width; the floor is a phone (400px).
+    minWidth: 400,
+    minHeight: 600,
     show: false,
-    backgroundColor: "#0b0e14",
+    backgroundColor: "#000000",
     // Belt and braces with Menu.setApplicationMenu(null): even if something
     // reintroduces a menu, this window will not present one.
     autoHideMenuBar: true,

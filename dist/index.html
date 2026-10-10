@@ -19,31 +19,32 @@
     <!-- data-boot paints the moment before SQLite has answered; app.js drops it
          on the first real render (see the boot state in styles.css). -->
     <div class="app" data-boot="pending">
-      <header class="masthead">
-        <div class="masthead-id">
+      <header class="topbar">
+        <div class="brand">
           <!-- A site plan, not a logo: a horizon with two things left standing on
                it. Drawn in Aseprite (assets-src/site-plan.aseprite), exported to
                dist/assets/, and tinted here through a CSS mask. -->
           <div class="mark" aria-hidden="true"></div>
-          <div class="masthead-titles">
-            <p class="masthead-eyebrow">NASA Space Apps · pilot archive</p>
-            <h1>Abandoned but Not Forgotten</h1>
-          </div>
+          <h1>Abandoned but Not Forgotten</h1>
         </div>
 
-        <div class="masthead-tools">
-          <!-- The archive's own size. The rail count reports the current view. -->
+        <nav class="topnav" aria-label="Primary">
+          <button type="button" data-go="home">Missions</button>
+          <button type="button" data-world-jump="moon">Moon</button>
+          <button type="button" data-world-jump="mars">Mars</button>
+        </nav>
+
+        <div class="toputil">
+          <!-- The archive's own size. The ledger count reports the current view. -->
           <span class="readout" id="readout"></span>
-          <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
-          <div class="filter-set filter-set--cats" id="category-filters" role="group" aria-label="Filter by story kind"></div>
           <label class="search">              <span class="search-icon" aria-hidden="true">
-              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="1" width="4" height="1.5" fill="currentColor" />
-                <rect x="1" y="6" width="1.5" height="4" fill="currentColor" />
-                <circle cx="8" cy="9" r="3.5" stroke="currentColor" stroke-width="1.5" />
-                <path d="M10.4 10.4L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
-              </svg>
-            </span>
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="6" y="1" width="4" height="1.5" fill="currentColor" />
+                  <rect x="1" y="6" width="1.5" height="4" fill="currentColor" />
+                  <circle cx="8" cy="9" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                  <path d="M10.4 10.4L13 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+                </svg>
+              </span>
             <input
               id="search"
               type="search"
@@ -56,8 +57,15 @@
         </div>
       </header>
 
+      <div class="filterbar" aria-label="Archive filters">
+        <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
+        <div class="filter-set filter-set--cats" id="category-filters" role="group" aria-label="Filter by story kind"></div>
+      </div>
+
       <main class="workspace">
-        <aside class="rail" aria-label="The archive">
+        <section class="record" id="record" aria-live="polite"></section>
+
+        <section class="ledger" aria-label="Archive index">
           <div class="rail-head">
             <h2>The archive</h2>
             <span class="rail-count" id="rail-count"></span>
@@ -80,12 +88,15 @@
             Every mark on the map is one of these five. Colour says how well we know
             it. Shape says what it is.
           </p>
-        </aside>
+        </section>
 
-        <section class="record" id="record" aria-live="polite"></section>
-
-        <aside class="provenance" id="provenance" aria-label="Provenance and next actions"></aside>
+        <section class="provenance" id="provenance" aria-label="Provenance and next actions"></section>
       </main>
+
+      <footer class="colophon">
+        Abandoned but Not Forgotten
+        <span>A curatorial archive of the hardware we left on the Moon and Mars.</span>
+      </footer>
     </div>
 
     <script src="scene.bundle.js"></script>

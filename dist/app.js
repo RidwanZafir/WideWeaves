@@ -476,19 +476,32 @@
       );
     }).join("");
 
+    // The overlay counts come from the same rows as the map.
+    var overlayBtns = order.map(function (code) {
+      var g = groups[code];
+      return (
+        '<button type="button" class="btn" data-world-jump="' + escapeHtml(code) + '">' +
+        escapeHtml(g.name) + " — " + g.items.length + (g.items.length === 1 ? " story" : " stories") +
+        "</button>"
+      );
+    }).join("");
+
     refs.record.innerHTML =
       '<div class="intro">' +
-      '<div class="hero">' +
-      '<p class="hero-eyebrow">A curatorial archive · ' + escapeHtml(eyebrow) + "</p>" +
-      '<h2 class="hero-title">Abandoned but Not Forgotten</h2>' +
-      '<p class="hero-lede">Every machine we left on the Moon and Mars is still out there. ' +
-      "This archive keeps eighteen of their stories — complete narratives, evidence, and film — " +
-      "so the hardware is remembered for what it did, not only for where it stopped.</p>" +
+      '<div class="hero hero--overlay">' +
       '<div class="viewport-wrap">' +
       '<div class="viewport" id="viewport" hidden></div>' +
       '<div class="map-fallback" id="map-fallback" hidden>' +
       '<div class="map">' + map + "</div>" +
       '<p class="map-key">Colour says how well we know it. Shape says what it is.</p>' +
+      "</div>" +
+      '<div class="hero-overlay">' +
+      '<p class="hero-eyebrow">A curatorial archive · ' + escapeHtml(eyebrow) + "</p>" +
+      '<h2 class="hero-title">Abandoned but Not Forgotten</h2>' +
+      '<p class="hero-lede">Every machine we left on the Moon and Mars is still out there. ' +
+      "This archive keeps eighteen of their stories — complete narratives, evidence, and film — " +
+      "so the hardware is remembered for what it did, not only for where it stopped.</p>" +
+      '<div class="hero-actions">' + overlayBtns + "</div>" +
       "</div>" +
       "</div>" +
       '<p class="hero-caption">' +
@@ -1504,6 +1517,7 @@
     renderProvenance();
     renderRail();
     renderCount();
+    paintTopnav();
     await renderReadout();
     markBooted();
   }
@@ -1738,6 +1752,41 @@
     return (e.detail || 0) === 0;
   }
 
+  /* ---- topbar: the mission-control nav ----
+     Missions goes home; Moon/Mars open their collections. Active leg is
+     marked so the bar reads as an instrument, not decoration. */
+
+  function paintTopnav() {
+    var bar = document.querySelector(".topnav");
+    if (!bar) return;
+    var home = !state.world && !state.record;
+    Array.prototype.forEach.call(bar.children, function (btn) {
+      var active = false;
+      if (btn.getAttribute("data-go") === "home") active = home;
+      else if (btn.hasAttribute("data-world-jump")) {
+        active = state.world === btn.getAttribute("data-world-jump");
+      }
+      if (active) btn.setAttribute("aria-current", "true");
+      else btn.removeAttribute("aria-current");
+    });
+  }
+
+  function bindTopnav() {
+    var bar = document.querySelector(".topbar");
+    if (!bar || bar.getAttribute("data-bound")) return;
+    bar.setAttribute("data-bound", "true");
+    bar.addEventListener("click", function (e) {
+      var go = e.target.closest("[data-go]");
+      if (go) {
+        if (go.getAttribute("data-go") === "home") goHome();
+        else showCollection(go.getAttribute("data-world"));
+        return;
+      }
+      var jump = e.target.closest("[data-world-jump]");
+      if (jump) showCollection(jump.getAttribute("data-world-jump"));
+    });
+  }
+
   function wireList() {
     if (refs.list) {
       refs.list.addEventListener("click", function (e) {
@@ -1898,6 +1947,7 @@
     wireList();
     bindForm();
     bindNarr();
+    bindTopnav();
 
     if (!bridge) {
       state.fatal = "The archive did not open.";
