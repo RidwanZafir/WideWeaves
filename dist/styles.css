@@ -691,8 +691,6 @@ input {
 }
 
 .record-inner {
-  max-width: 660px;
-  margin: 0 auto;
   width: 100%;
   animation: settle 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -2161,7 +2159,6 @@ input {
 
 .narrative {
   margin-top: var(--s5);
-  max-width: 68ch;
 }
 
 .story + .story {
@@ -2251,8 +2248,6 @@ body.reading-focus .workspace {
 }
 
 body.reading-focus .record {
-  max-width: 860px;
-  margin: 0 auto;
   width: 100%;
 }
 
@@ -2354,7 +2349,6 @@ body.reading-focus .record {
   font-size: 18px;
   line-height: 1.6;
   color: var(--paper-dim);
-  max-width: 62ch;
   margin: 0 0 var(--s6);
   text-wrap: pretty;
 }
@@ -2472,7 +2466,6 @@ img[data-gone="true"] {
   line-height: 1.6;
   color: var(--paper-dim);
   margin-bottom: var(--s3);
-  max-width: 62ch;
 }
 
 .why-line {
@@ -2480,7 +2473,6 @@ img[data-gone="true"] {
   font-size: 16.5px;
   line-height: 1.65;
   color: var(--paper);
-  max-width: 62ch;
   padding-left: var(--s4);
   border-left: 2px solid var(--ember);
   margin-bottom: var(--s5);
@@ -2679,7 +2671,6 @@ img[data-gone="true"] {
   line-height: 1.6;
   color: var(--paper-dim);
   margin-bottom: var(--s2);
-  max-width: 62ch;
 }
 
 .video-link {
@@ -2910,8 +2901,6 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s2) var(--s5);
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
   padding: var(--s3) var(--s5);
 }
@@ -2929,8 +2918,6 @@ body {
 .workspace {
   display: block;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0 var(--s5) 60px;
   overflow-y: auto;
   min-height: 0;
@@ -2954,8 +2941,6 @@ body {
 
 .colophon {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   justify-content: flex-start;
   border-top: 1px solid #404040;
 }
@@ -3213,7 +3198,7 @@ body {
 }
 
 .narrative {
-  max-width: 500px;
+  margin-top: var(--s5);
 }
 
 .lede,
@@ -3221,7 +3206,6 @@ body {
   font-size: 16px;
   line-height: 1.5;
   letter-spacing: 0.02em;
-  max-width: 500px;
 }
 
 .feature-sub,
@@ -3239,7 +3223,6 @@ body {
   font-size: 13px;
   line-height: 1.7;
   letter-spacing: 0.1em;
-  max-width: 450px;
 }
 
 .pull {
@@ -3279,7 +3262,6 @@ body {
   left: 24px;
   right: 24px;
   bottom: 24px;
-  max-width: 480px;
 }
 
 .hero-actions {
@@ -3327,7 +3309,8 @@ body {
 }
 
 .collection-card p {
-  max-width: 500px;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .narr,
@@ -3714,7 +3697,6 @@ body {
   font-size: 15px;
   line-height: 1.7;
   letter-spacing: 0;
-  max-width: 46ch;
 }
 
 .feature-summary,
@@ -3864,7 +3846,6 @@ body {
 
 .collection-card p {
   font-size: 14px;
-  max-width: 62ch;
 }
 
 .feature-kicker {
