@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip" href="#record">Skip to the record</a>
     <!-- data-boot paints the moment before SQLite has answered; app.js drops it
          on the first real render (see the boot state in styles.css). -->
     <div class="app" data-boot="pending">
@@ -31,6 +32,7 @@
           <!-- The archive's own size. The rail count reports the current view. -->
           <span class="readout" id="readout"></span>
           <div class="filter-set" id="world-filters" role="group" aria-label="Filter by world"></div>
+          <div class="filter-set filter-set--cats" id="category-filters" role="group" aria-label="Filter by story kind"></div>
           <label class="search">              <span class="search-icon" aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="6" y="1" width="4" height="1.5" fill="currentColor" />

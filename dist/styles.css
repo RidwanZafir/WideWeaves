@@ -1882,3 +1882,415 @@ input {
     padding-right: var(--s1);
   }
 }
+
+/* ============================================================
+   The reading room — full stories, narration, reader controls.
+
+   Same hard rules as the rest of the file: flat surfaces only, hard
+   pixel edges only. The story is the attraction; the chrome stays
+   quiet, square, and out of the way.
+   ============================================================ */
+
+.skip {
+  position: absolute;
+  left: var(--s4);
+  top: -48px;
+  z-index: 50;
+  background: var(--ember);
+  color: #121009;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: var(--s2) var(--s3);
+  text-decoration: none;
+}
+
+.skip:focus {
+  top: var(--s2);
+}
+
+/* ---- rail previews that read like previews ---- */
+
+.row-sub {
+  display: block;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--steel-dim);
+  margin: 2px 0 0 18px;
+}
+
+.row-full {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ember-bright);
+}
+
+/* ---- second filter row: story kinds ----
+   The world chips keep their exact single-row shape. Kinds get their own
+   wrapping row below, so the masthead never overflows a narrow window.
+   (The tools group used to be flex:none; with two filter rows it must be
+   allowed to shrink and wrap, right-aligned so wide windows look unchanged.) */
+
+.masthead-tools {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: var(--s2);
+}
+
+.filter-set--cats {
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* The ledger rows must give way in a 250px rail: added preview text
+   (subtitle, kind, reading time) wraps as units instead of forcing tracks. */
+.row-meta,
+.row-right {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.row-right {
+  justify-content: flex-end;
+}
+
+.chip--cat {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+/* ---- the record as a reading surface ---- */
+
+.standfirst {
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--paper);
+  margin-top: var(--s3);
+}
+
+.read-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--warm-faint);
+  margin-top: var(--s3);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--warm-hair);
+}
+
+.read-meta .cat {
+  color: var(--ember-bright);
+}
+
+/* ---- reading progress: one flat rule, no decoration ----
+   Widths move in 10% buckets via data-pct: inline styles are forbidden by
+   the page's own CSP, so the renderer sets an attribute, not a style. */
+
+.read-progress {
+  height: 3px;
+  background: var(--warm-hair);
+  margin-bottom: var(--s4);
+}
+
+.read-progress span,
+.narr-progress span {
+  display: block;
+  height: 3px;
+  width: 0%;
+  background: var(--ember);
+}
+
+.read-progress[data-pct="10"] span, .narr-progress[data-pct="10"] span { width: 10%; }
+.read-progress[data-pct="20"] span, .narr-progress[data-pct="20"] span { width: 20%; }
+.read-progress[data-pct="30"] span, .narr-progress[data-pct="30"] span { width: 30%; }
+.read-progress[data-pct="40"] span, .narr-progress[data-pct="40"] span { width: 40%; }
+.read-progress[data-pct="50"] span, .narr-progress[data-pct="50"] span { width: 50%; }
+.read-progress[data-pct="60"] span, .narr-progress[data-pct="60"] span { width: 60%; }
+.read-progress[data-pct="70"] span, .narr-progress[data-pct="70"] span { width: 70%; }
+.read-progress[data-pct="80"] span, .narr-progress[data-pct="80"] span { width: 80%; }
+.read-progress[data-pct="90"] span, .narr-progress[data-pct="90"] span { width: 90%; }
+.read-progress[data-pct="100"] span, .narr-progress[data-pct="100"] span { width: 100%; }
+
+/* ---- reader toolbar ---- */
+
+.read-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s4);
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--warm-hair);
+  border-bottom: 1px solid var(--warm-hair);
+}
+
+.read-toolbar-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warm-faint);
+  margin-right: var(--s2);
+}
+
+.toolbtn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--hair-strong);
+  color: var(--paper-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.toolbtn:hover {
+  border-color: var(--ember);
+  color: var(--ember-bright);
+}
+
+.toolbtn[aria-pressed="true"] {
+  background: var(--ember-dim);
+  border-color: var(--ember);
+  color: var(--ember-bright);
+}
+
+/* ---- narration player: an instrument, not a billboard ---- */
+
+.narr {
+  margin-top: var(--s4);
+  border: 1px solid var(--warm-hair);
+  background: var(--warm-raised);
+  padding: var(--s4);
+}
+
+.narr-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2) var(--s3);
+}
+
+.narr-main {
+  min-width: 170px;
+}
+
+.narr-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warm-faint);
+}
+
+.narr-field select {
+  appearance: none;
+  background: var(--warm-void);
+  border: 1px solid var(--hair-strong);
+  color: var(--paper-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  max-width: 190px;
+}
+
+.narr-progress {
+  height: 3px;
+  background: var(--warm-hair);
+  margin-top: var(--s3);
+}
+
+.narr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s3);
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--warm-faint);
+  margin-top: var(--s2);
+}
+
+.narr-status {
+  color: var(--paper-dim);
+}
+
+.narr-elapsed {
+  margin-left: auto;
+  color: var(--steel-dim);
+}
+
+.narr-note {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--warm-faint);
+  margin-top: var(--s2);
+}
+
+/* ---- hero figure: cropped, captioned, credited ---- */
+
+.hero-fig {
+  margin: var(--s5) 0 0;
+  border: 1px solid var(--warm-hair);
+}
+
+.hero-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: auto;
+}
+
+.hero-fig figcaption {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--warm-faint);
+  padding: var(--s2) var(--s3);
+  border-top: 1px solid var(--warm-hair);
+}
+
+/* ---- the narrative itself: measure, rhythm, hierarchy ---- */
+
+.narrative {
+  margin-top: var(--s5);
+  max-width: 68ch;
+}
+
+.story + .story {
+  margin-top: var(--s5);
+}
+
+.story h3 {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember-bright);
+  margin-bottom: var(--s2);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--warm-hair);
+}
+
+.story:first-child h3 {
+  border-top: none;
+  padding-top: 0;
+}
+
+.story p {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--paper);
+  margin-bottom: 1em;
+}
+
+.story p:last-child {
+  margin-bottom: 0;
+}
+
+/* Reader text-size steps. UI chrome is untouched; only the story moves. */
+.record-inner[data-readsize="-2"] .story p { font-size: 13px; }
+.record-inner[data-readsize="-1"] .story p { font-size: 14.5px; }
+.record-inner[data-readsize="1"] .story p { font-size: 18px; }
+.record-inner[data-readsize="2"] .story p { font-size: 20px; line-height: 1.8; }
+
+/* ---- prev / next: two doors, never one ---- */
+
+.record-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+  margin-top: var(--s6);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--warm-hair);
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+
+.nav-btn--empty {
+  visibility: hidden;
+}
+
+.nav-dir {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.nav-name {
+  font-family: var(--serif);
+  font-size: 15px;
+}
+
+/* ---- focus mode: the archive steps back ---- */
+
+body.reading-focus .rail,
+body.reading-focus .provenance {
+  display: none;
+}
+
+body.reading-focus .workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.reading-focus .record {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---- visible keyboard focus everywhere new ---- */
+
+.skip:focus,
+.toolbtn:focus-visible,
+.narr-field select:focus-visible,
+.nav-btn:focus-visible,
+.chip:focus-visible,
+.row:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+/* ---- small screens: the story keeps its measure ---- */
+
+@media (max-width: 1180px) {
+  .narr {
+    padding: var(--s3);
+  }
+
+  .record-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-btn--empty {
+    display: none;
+  }
+
+  .story p {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .read-progress span,
+  .narr-progress span {
+    transition: none;
+  }
+}

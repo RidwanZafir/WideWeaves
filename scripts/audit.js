@@ -80,12 +80,12 @@ async function main() {
     !opened.ok && /not a database|malformed|encrypted/i.test(opened.message),
     opened.message
   );
-  check("the healthy connection is unaffected by the failed open", call("archive:objects", {}).length === 5);
+  check("the healthy connection is unaffected by the failed open", call("archive:objects", {}).length === 18);
   fs.rmSync(corruptDir, { recursive: true, force: true });
 
   /* ---- 2. search treats wildcards as characters --------------------------- */
   console.log("\n== search: LIKE wildcards are characters, not operators ==");
-  check("baseline is the whole archive", call("archive:objects", {}).length === 5);
+  check("baseline is the whole archive", call("archive:objects", {}).length === 18);
 
   const percent = call("archive:objects", { q: "%" });
   check("a literal % matches nothing", percent.length === 0, percent.length + " rows — % acted as a wildcard");
@@ -115,10 +115,10 @@ async function main() {
 
   /* ---- 3. the boundary does not trust its caller -------------------------- */
   console.log("\n== the IPC boundary validates what it is handed ==");
-  check("objects(null) does not throw", call("archive:objects", null).length === 5);
-  check("objects('a string') does not throw", call("archive:objects", "a string").length === 5);
-  check("objects({worldCode: 123}) ignores the malformed filter", call("archive:objects", { worldCode: 123 }).length === 5);
-  check("objects({q: null}) does not throw", call("archive:objects", { q: null }).length === 5);
+  check("objects(null) does not throw", call("archive:objects", null).length === 18);
+  check("objects('a string') does not throw", call("archive:objects", "a string").length === 18);
+  check("objects({worldCode: 123}) ignores the malformed filter", call("archive:objects", { worldCode: 123 }).length === 18);
+  check("objects({q: null}) does not throw", call("archive:objects", { q: null }).length === 18);
 
   check("object(undefined) is a miss, not a crash", call("archive:object", undefined) === null);
   check("object(0) is a miss", call("archive:object", 0) === null);

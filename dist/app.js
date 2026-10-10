@@ -27,6 +27,7 @@
   var state = {
     worlds: [],
     world: null,
+    category: null,
     q: "",
     objects: [],
     allObjects: [],
@@ -38,12 +39,16 @@
     /* A failed boot. While set, the workspace shows the failure instead of an
        empty shell — an error screen that cannot be reached is worse than none. */
     fatal: "",
-    booted: false
+    booted: false,
+    // Reader preferences. In-memory only: the archive keeps records, not UI.
+    readSize: 0,
+    focusMode: false
   };
 
   var refs = {
     app: null,
     filters: document.getElementById("world-filters"),
+    catFilters: document.getElementById("category-filters"),
     search: document.getElementById("search"),
     list: document.getElementById("record-list"),
     listEmpty: document.getElementById("rail-empty"),
@@ -85,6 +90,26 @@
 
   var dotClass = function (c) {
     return c === "unknown" ? "low" : c || "low";
+  };
+
+  /* ---- story kinds: the fixed category vocabulary ----
+     Labels live here so the filter row, the rail, and the record sheet can
+     never disagree about what a tag means. */
+  var CATEGORY_LABELS = {
+    "historic-first": "Historic firsts",
+    "robotic-explorer": "Robotic explorers",
+    "human-footprint": "Human footprints",
+    "lost-mission": "Lost missions",
+    "science-legacy": "Lasting science",
+    "engineering-lesson": "Engineering lessons"
+  };
+
+  var categoryLabel = function (c) {
+    return CATEGORY_LABELS[c] || c;
+  };
+
+  var recordCategories = function (r) {
+    return (r && r.categories) || [];
   };
 
   /* ---- bridge reads (every one can reject on a failed boot) ---- */
@@ -332,6 +357,369 @@
       "</div>";
   }
 
+  /* ---- narration: listen to the story ----
+     Browser speech, honestly labelled. The Web Speech API needs no keys and
+     no backend; the narration layer is shaped so a neural provider could be
+     plugged in later (one function turns a record into speakable text, one
+     turns text into chunks). Long stories are chunked so nothing is cut off;
+     leaving a record always stops its voice. */
+
+  var narr = {
+    activeId: null,
+    chunks: [],
+    offsets: [],
+    totalChars: 0,
+    index: 0,
+    playing: false,
+    rate: 1,
+    voiceURI: null,
+    voices: [],
+    elapsed: 0,
+    elapsedTimer: null,
+    error: ""
+  };
+
+  var speech = function () {
+    try {
+      return window.speechSynthesis || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  var narrSupported = function () {
+    return !!speech();
+  };
+
+  // One record -> one speakable text. Title, subtitle, then every section in
+  // order. The complete story, never just the summary.
+  var narrText = function (r) {
+    var parts = [];
+    if (r.name) parts.push(r.name + ".");
+    if (r.subtitle) parts.push(r.subtitle + ".");
+    var sections = (r && r.narrative) || [];
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i] || {};
+      if (s.h) parts.push(s.h + ".");
+      var paras = s.p || [];
+      for (var j = 0; j < paras.length; j++) {
+        if (paras[j]) parts.push(paras[j]);
+      }
+    }
+    return parts.join(" ");
+  };
+
+  // speechSynthesis implementations truncate or wander on very long inputs,
+  // so pack sentences into ~240-character chunks at sentence boundaries.
+  var chunkStory = function (text) {
+    var sentences = String(text || "").match(/[^.!?]+[.!?]+["'”’)]?|\S[^.!?]*$/g) || [];
+    var chunks = [];
+    var current = "";
+    for (var i = 0; i < sentences.length; i++) {
+      var s = sentences[i].trim();
+      if (!s) continue;
+      if ((current + " " + s).trim().length > 240 && current) {
+        chunks.push(current.trim());
+        current = s;
+      } else {
+        current = (current + " " + s).trim();
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    return chunks.length ? chunks : [String(text || "").slice(0, 240)];
+  };
+
+  var narrPanel = function () {
+    return refs.record ? refs.record.querySelector(".narr") : null;
+  };
+
+  var narrStatusText = function () {
+    if (narr.error) return narr.error;
+    if (!narr.chunks.length) return "Browser narration. Press play to hear the full story.";
+    if (narr.playing) return "Reading aloud · part " + (narr.index + 1) + " of " + narr.chunks.length + ".";
+    if (narr.index > 0 && narr.index < narr.chunks.length) return "Paused · part " + (narr.index + 1) + " of " + narr.chunks.length + ".";
+    if (narr.index >= narr.chunks.length) return "Finished the story.";
+    return "Ready. Press play to hear the full story.";
+  };
+
+  var narrElapsedText = function () {
+    var s = Math.floor(narr.elapsed || 0);
+    var m = Math.floor(s / 60);
+    var r = s % 60;
+    return (m < 10 ? "0" + m : "" + m) + ":" + (r < 10 ? "0" + r : "" + r);
+  };
+
+  var stopElapsedTimer = function () {
+    if (narr.elapsedTimer) {
+      try { clearInterval(narr.elapsedTimer); } catch (e) {}
+      narr.elapsedTimer = null;
+    }
+  };
+
+  var startElapsedTimer = function () {
+    stopElapsedTimer();
+    narr.elapsedTimer = setInterval(function () {
+      narr.elapsed += 1;
+      var el = refs.record ? refs.record.querySelector(".narr-elapsed") : null;
+      if (el) el.textContent = narrElapsedText();
+      else stopElapsedTimer();
+    }, 1000);
+  };
+
+  var paintNarr = function () {
+    var panel = narrPanel();
+    if (!panel) {
+      stopElapsedTimer();
+      return;
+    }
+    panel.setAttribute("data-state", narr.playing ? "playing" : (narr.index > 0 && narr.index < narr.chunks.length) ? "paused" : (narr.index >= narr.chunks.length && narr.chunks.length ? "done" : "idle"));
+    var toggle = panel.querySelector('[data-narr="toggle"]');
+    if (toggle) toggle.textContent = narr.playing ? "Pause narration" : (narr.index > 0 && narr.index < narr.chunks.length) ? "Resume narration" : "Listen to Story";
+    var status = panel.querySelector(".narr-status");
+    if (status) status.textContent = narrStatusText();
+    var bar = panel.querySelector(".narr-progress span");
+    // CSP forbids inline styles, so progress moves in 10% buckets carried by
+    // a data attribute the stylesheet turns into widths (see styles.css).
+    var pct = narr.chunks.length ? Math.round((Math.min(narr.index, narr.chunks.length) / narr.chunks.length) * 100) : 0;
+    var bucket = Math.round(pct / 10) * 10;
+    var track = panel.querySelector(".narr-progress");
+    if (track) track.setAttribute("data-pct", String(bucket));
+    var count = panel.querySelector(".narr-count");
+    if (count) count.textContent = narr.chunks.length ? (Math.min(narr.index + (narr.playing ? 1 : 0), narr.chunks.length) + " / " + narr.chunks.length) : "";
+    var elapsed = panel.querySelector(".narr-elapsed");
+    if (elapsed) elapsed.textContent = narrElapsedText();
+  };
+
+  var pickVoice = function () {
+    var s = speech();
+    if (!s) return null;
+    var voices = [];
+    try { voices = s.getVoices() || []; } catch (e) { voices = []; }
+    narr.voices = voices;
+    if (narr.voiceURI) {
+      for (var i = 0; i < voices.length; i++) {
+        if (voices[i].voiceURI === narr.voiceURI) return voices[i];
+      }
+    }
+    for (var j = 0; j < voices.length; j++) {
+      if (voices[j].default) return voices[j];
+    }
+    var en = null;
+    for (var k = 0; k < voices.length; k++) {
+      if (/^en/i.test(voices[k].lang || "")) {
+        en = en || voices[k];
+        if (/en[-_]US/i.test(voices[k].lang || "")) return voices[k];
+      }
+    }
+    return en || voices[0] || null;
+  };
+
+  var fillVoiceSelect = function () {
+    var panel = narrPanel();
+    if (!panel) return;
+    var sel = panel.querySelector('[data-narr="voice"]');
+    if (!sel) return;
+    var voices = narr.voices && narr.voices.length ? narr.voices : (function () { pickVoice(); return narr.voices; })();
+    var html = "";
+    for (var i = 0; i < voices.length; i++) {
+      var v = voices[i];
+      var selected = narr.voiceURI ? v.voiceURI === narr.voiceURI : !!v.default;
+      html += '<option value="' + escapeHtml(v.voiceURI) + '"' + (selected ? " selected" : "") + ">" +
+        escapeHtml(v.name + " · " + (v.lang || "")) + "</option>";
+    }
+    sel.innerHTML = html || '<option value="">Default voice</option>';
+  };
+
+  var speakChunk = function () {
+    var s = speech();
+    if (!s || narr.index >= narr.chunks.length) {
+      narr.playing = false;
+      stopElapsedTimer();
+      paintNarr();
+      return;
+    }
+    var text = narr.chunks[narr.index];
+    var u;
+    try {
+      u = new SpeechSynthesisUtterance(text);
+    } catch (e) {
+      narr.error = "Narration could not start in this browser.";
+      narr.playing = false;
+      paintNarr();
+      return;
+    }
+    u.rate = narr.rate;
+    var voice = pickVoice();
+    if (voice) {
+      try { u.voice = voice; } catch (e) {}
+    }
+    var chunkIndex = narr.index;
+    u.onend = function () {
+      if (narr.activeId == null || chunkIndex !== narr.index) return;
+      narr.index += 1;
+      if (narr.index >= narr.chunks.length) {
+        narr.playing = false;
+        stopElapsedTimer();
+      }
+      paintNarr();
+      if (narr.playing) speakChunk();
+    };
+    u.onerror = function (ev) {
+      if (chunkIndex !== narr.index) return;
+      // "interrupted" is us (pause/stop call cancel); anything else is real.
+      if (ev && ev.error === "interrupted") return;
+      narr.playing = false;
+      stopElapsedTimer();
+      narr.error = "Narration stopped unexpectedly. Press play to try again.";
+      paintNarr();
+    };
+    try {
+      s.speak(u);
+    } catch (e) {
+      narr.playing = false;
+      narr.error = "Narration could not start in this browser.";
+      paintNarr();
+    }
+  };
+
+  var startNarr = function () {
+    var s = speech();
+    if (!s || !state.record) return;
+    if (narr.activeId !== state.record.id || !narr.chunks.length) {
+      narr.chunks = chunkStory(narrText(state.record));
+      narr.index = 0;
+      narr.elapsed = 0;
+      narr.activeId = state.record.id;
+    }
+    if (narr.index >= narr.chunks.length) {
+      narr.index = 0;
+      narr.elapsed = 0;
+    }
+    narr.error = "";
+    narr.playing = true;
+    try { s.cancel(); } catch (e) {}
+    startElapsedTimer();
+    paintNarr();
+    speakChunk();
+  };
+
+  var pauseNarr = function () {
+    var s = speech();
+    narr.playing = false;
+    try { if (s) s.pause(); } catch (e) {}
+    paintNarr();
+  };
+
+  var resumeNarr = function () {
+    var s = speech();
+    if (!s) return;
+    narr.error = "";
+    try {
+      // If the synthesizer is paused mid-chunk, resume it; otherwise the
+      // queue was cancelled (e.g. after a rate change) and we speak on.
+      if (s.paused) {
+        narr.playing = true;
+        startElapsedTimer();
+        s.resume();
+        paintNarr();
+      } else {
+        narr.playing = true;
+        startElapsedTimer();
+        paintNarr();
+        speakChunk();
+      }
+    } catch (e) {
+      narr.playing = true;
+      paintNarr();
+      speakChunk();
+    }
+  };
+
+  var stopNarr = function () {
+    var s = speech();
+    narr.playing = false;
+    try { if (s) s.cancel(); } catch (e) {}
+    stopElapsedTimer();
+    narr.index = 0;
+    narr.elapsed = 0;
+    narr.error = "";
+    paintNarr();
+  };
+
+  // A new record silences the old one: two stories never narrate at once,
+  // and leaving a story always cleans up its voice.
+  var silenceForRecord = function (id) {
+    if (narr.activeId != null && narr.activeId !== id) {
+      var s = speech();
+      try { if (s) s.cancel(); } catch (e) {}
+      stopElapsedTimer();
+      narr.activeId = null;
+      narr.chunks = [];
+      narr.index = 0;
+      narr.playing = false;
+      narr.elapsed = 0;
+      narr.error = "";
+    }
+  };
+
+  var bindNarr = function () {
+    if (!refs.record || refs.record.getAttribute("data-narr-bound")) return;
+    refs.record.setAttribute("data-narr-bound", "true");
+    refs.record.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-narr]");
+      if (!btn || btn.tagName === "SELECT") return;
+      var action = btn.getAttribute("data-narr");
+      if (action === "toggle") {
+        if (!narrSupported()) return;
+        if (narr.playing) pauseNarr();
+        else if (narr.index > 0 && narr.index < narr.chunks.length && narr.activeId === (state.record && state.record.id)) resumeNarr();
+        else startNarr();
+      } else if (action === "restart") {
+        if (!narrSupported()) return;
+        narr.index = 0;
+        narr.elapsed = 0;
+        if (state.record) {
+          narr.chunks = chunkStory(narrText(state.record));
+          narr.activeId = state.record.id;
+        }
+        startNarr();
+      } else if (action === "stop") {
+        stopNarr();
+      }
+    });
+    refs.record.addEventListener("change", function (e) {
+      var sel = e.target.closest && e.target.closest("[data-narr]");
+      if (!sel) return;
+      var kind = sel.getAttribute("data-narr");
+      if (kind === "rate") {
+        var rate = Number(sel.value) || 1;
+        narr.rate = rate;
+        // Rate applies to the next chunk: restart the current one if playing.
+        if (narr.playing) {
+          var s = speech();
+          try { if (s) s.cancel(); } catch (err) {}
+          speakChunk();
+        }
+      } else if (kind === "voice") {
+        narr.voiceURI = sel.value || null;
+        if (narr.playing) {
+          var sp = speech();
+          try { if (sp) sp.cancel(); } catch (err) {}
+          speakChunk();
+        }
+      }
+    });
+    try {
+      var s = speech();
+      if (s && typeof s.addEventListener === "function") {
+        s.addEventListener("voiceschanged", function () {
+          pickVoice();
+          fillVoiceSelect();
+        });
+      }
+    } catch (e) {}
+  };
+
   /* ---- record column ---- */
 
   var lastRecordId = -1;
@@ -408,23 +796,174 @@
     }
 
     var html =
-      '<div class="record-inner"' + (sameRecord ? ' data-replay="same"' : "") + ">" +
+      '<div class="record-inner" data-readsize="' + state.readSize + '"' +
+      (state.focusMode ? ' data-focus="on"' : "") +
+      (sameRecord ? ' data-replay="same"' : "") + ">" +
+      '<div class="read-progress" data-pct="0" aria-hidden="true"><span></span></div>' +
       '<div class="eyebrow"><span>Record</span>' +
       (r.mark ? '<span class="world"> · ' + escapeHtml(r.mark) + "</span>" : "") +
       "</div>" +
       '<h2 tabindex="-1">' + escapeHtml(r.name) + "</h2>" + factLine + badgesLine;
 
+    if (r.subtitle) {
+      html += '<p class="standfirst">' + escapeHtml(r.subtitle) + "</p>";
+    }
+
     if (r.summary) {
       html += '<p class="lede">' + escapeHtml(r.summary) + "</p>";
     }
 
+    // Reading metadata: how long, where, what kind. One line, no dashboard.
+    var readBits = [];
+    if (r.worldName) readBits.push(escapeHtml(r.worldName));
+    if (r.readingMinutes != null) readBits.push(escapeHtml(String(r.readingMinutes)) + " min read");
+    var cats = recordCategories(r);
+    for (var ci = 0; ci < cats.length; ci++) {
+      readBits.push('<span class="cat">' + escapeHtml(categoryLabel(cats[ci])) + "</span>");
+    }
+    if (readBits.length) {
+      html += '<p class="read-meta">' + readBits.join('<span class="sep"> · </span>') + "</p>";
+    }
+
+    html += renderReadToolbar() + renderNarrPanel();
+    html += renderHero(r);
+    html += renderNarrative(r);
     html += renderMedia(mediaForRecord(r));
-    html += blocks + "</div>";
+    html += blocks + renderRecordNav(r) + "</div>";
 
     refs.record.innerHTML = html;
     refs.record.scrollTop = savedScroll;
     lastRecordId = r.id;
+    applyFocusMode();
+    updateReadProgress();
+    fillVoiceSelect();
+    paintNarr();
     showNotice();
+  }
+
+  /* ---- reader chrome: toolbar, hero, narrative, prev/next ----
+     Everything here is additive: the five fact blocks, the evidence media,
+     and the provenance panels render exactly as before. */
+
+  function renderReadToolbar() {
+    return (
+      '<div class="read-toolbar" role="toolbar" aria-label="Reading controls">' +
+      '<span class="read-toolbar-label">Reading</span>' +
+      '<button type="button" class="toolbtn" data-read="smaller" aria-label="Smaller text">A−</button>' +
+      '<button type="button" class="toolbtn" data-read="larger" aria-label="Larger text">A+</button>' +
+      '<button type="button" class="toolbtn" data-read="focus" aria-pressed="' + (state.focusMode ? "true" : "false") + '">' +
+      (state.focusMode ? "Exit focus" : "Focus") + "</button>" +
+      "</div>"
+    );
+  }
+
+  function renderNarrPanel() {
+    if (!narrSupported()) {
+      return (
+        '<div class="narr" data-state="unsupported">' +
+        '<p class="narr-status" role="status">Listening is not supported in this browser — the full story above is always available to read.</p>' +
+        "</div>"
+      );
+    }
+    var rates = [0.75, 1, 1.25, 1.5];
+    var rateOpts = rates.map(function (x) {
+      return '<option value="' + x + '"' + (narr.rate === x ? " selected" : "") + ">" + x + "×</option>";
+    }).join("");
+    return (
+      '<div class="narr" data-state="idle">' +
+      '<div class="narr-row">' +
+      '<button type="button" class="btn narr-main" data-narr="toggle">Listen to Story</button>' +
+      '<button type="button" class="toolbtn" data-narr="restart" aria-label="Restart narration">Restart</button>' +
+      '<button type="button" class="toolbtn" data-narr="stop" aria-label="Stop narration">Stop</button>' +
+      '<label class="narr-field">Speed <select data-narr="rate" aria-label="Narration speed">' + rateOpts + "</select></label>" +
+      '<label class="narr-field">Voice <select data-narr="voice" aria-label="Narration voice"><option value="">Default voice</option></select></label>' +
+      "</div>" +
+      '<div class="narr-progress" data-pct="0" aria-hidden="true"><span></span></div>' +
+      '<p class="narr-meta"><span class="narr-status" role="status">Browser narration. Press play to hear the full story.</span> ' +
+      '<span class="narr-count" aria-hidden="true"></span> <span class="narr-elapsed" aria-label="Elapsed time">00:00</span></p>' +
+      '<p class="narr-note">Read aloud by your browser — not an AI voice, and nothing leaves the archive.</p>' +
+      "</div>"
+    );
+  }
+
+  function renderHero(r) {
+    if (!r.heroImage) return "";
+    return (
+      '<figure class="hero-fig">' +
+      '<img class="hero-img" src="' + escapeHtml(r.heroImage) + '" alt="Archive imagery for ' + escapeHtml(r.name) + '" loading="lazy" />' +
+      (r.heroCredit ? "<figcaption>" + escapeHtml(r.heroCredit) + "</figcaption>" : "") +
+      "</figure>"
+    );
+  }
+
+  function renderNarrative(r) {
+    var sections = (r && r.narrative) || [];
+    if (!sections.length) return "";
+    var out = '<div class="narrative" aria-label="Full story">';
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i] || {};
+      out += '<section class="story">';
+      if (s.h) out += "<h3>" + escapeHtml(s.h) + "</h3>";
+      var paras = s.p || [];
+      for (var j = 0; j < paras.length; j++) {
+        if (paras[j]) out += "<p>" + escapeHtml(paras[j]) + "</p>";
+      }
+      out += "</section>";
+    }
+    return out + "</div>";
+  }
+
+  function recordNeighbour(offset) {
+    var list = state.allObjects && state.allObjects.length ? state.allObjects : state.objects;
+    if (!list.length || !state.record) return null;
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === state.record.id) {
+        idx = i;
+        break;
+      }
+    }
+    if (idx === -1) return null;
+    var n = list[idx + offset];
+    return n || null;
+  }
+
+  function renderRecordNav(r) {
+    var prev = recordNeighbour(-1);
+    var next = recordNeighbour(1);
+    if (!prev && !next) return "";
+    var out = '<nav class="record-nav" aria-label="More stories">';
+    out += prev
+      ? '<button type="button" class="btn nav-btn" data-nav="' + prev.id + '"><span class="nav-dir">Previous story</span><span class="nav-name">' + escapeHtml(prev.name) + "</span></button>"
+      : '<span class="nav-btn nav-btn--empty" aria-hidden="true"></span>';
+    out += next
+      ? '<button type="button" class="btn nav-btn" data-nav="' + next.id + '"><span class="nav-dir">Next story</span><span class="nav-name">' + escapeHtml(next.name) + "</span></button>"
+      : '<span class="nav-btn nav-btn--empty" aria-hidden="true"></span>';
+    return out + "</nav>";
+  }
+
+  function applyFocusMode() {
+    try {
+      if (state.focusMode) document.body.classList.add("reading-focus");
+      else document.body.classList.remove("reading-focus");
+    } catch (e) {}
+    // The toolbar button is re-rendered with the record; keep its state true.
+    if (refs.record) {
+      var btn = refs.record.querySelector('[data-read="focus"]');
+      if (btn) btn.setAttribute("aria-pressed", state.focusMode ? "true" : "false");
+    }
+  }
+
+  function updateReadProgress() {
+    if (!refs.record) return;
+    var track = refs.record.querySelector(".read-progress");
+    if (!track) return;
+    var max = refs.record.scrollHeight - refs.record.clientHeight;
+    var pct = max > 0 ? Math.round((refs.record.scrollTop / max) * 100) : 0;
+    if (pct < 0) pct = 0;
+    if (pct > 100) pct = 100;
+    // Buckets, not inline styles: style-src forbids the latter (see paintNarr).
+    track.setAttribute("data-pct", String(Math.round(pct / 10) * 10));
   }
 
   /* A failure the reader has to see: announced, edged, and it never eats the
@@ -622,10 +1161,17 @@
         var certainty = o.certainty || "unknown";
         var eraYear = o.era || "";
         if (o.year != null) eraYear += " · " + String(o.year);
+        if (o.readingMinutes != null) eraYear += " · " + String(o.readingMinutes) + " min";
         // One glance says which records carry footage, so nobody has to hunt.
         var mediaTag = o.hasVideo && o.hasPhoto ? "photo · film"
           : o.hasVideo ? "film"
           : o.hasPhoto ? "photo" : "";
+        // The preview must read like a preview: a subtitle and a promise of
+        // the full story, never the story itself.
+        var sub = o.subtitle
+          ? '<span class="row-sub">' + escapeHtml(o.subtitle) + "</span>"
+          : "";
+        var fullTag = '<span class="row-full">Full story</span>';
         html +=
           '<li><button type="button" class="row" data-id="' + o.id + '"' +
           (o.id === state.selectedId ? ' aria-current="true"' : "") +
@@ -635,10 +1181,12 @@
           escapeHtml(o.name) +
           '<span class="sr-only">(' + escapeHtml(certaintyLabel(certainty)) + ")</span>" +
           "</span>" +
+          sub +
           '<span class="row-meta">' +
           '<span class="row-world">' + escapeHtml(o.worldName || "") + "</span>" +
           '<span class="row-right">' +
           (mediaTag ? '<span class="row-media">' + mediaTag + "</span>" : "") +
+          fullTag +
           '<span class="row-era">' + escapeHtml(eraYear) + "</span>" +
           "</span>" +
           "</button></li>";
@@ -704,6 +1252,9 @@
   }
 
   function renderFatalState() {
+    stopNarr();
+    state.focusMode = false;
+    try { document.body.classList.remove("reading-focus"); } catch (e) {}
     if (refs.list) refs.list.innerHTML = "";
     if (refs.listEmpty) refs.listEmpty.hidden = true;
     if (refs.listNote) refs.listNote.hidden = true;
@@ -718,6 +1269,7 @@
 
   async function selectObject(id, opts) {
     var keyboard = !!(opts && opts.keyboard);
+    silenceForRecord(id);
     state.selectedId = id;
     var detail = null;
     try {
@@ -747,6 +1299,7 @@
   async function reloadObjects() {
     var opts = {};
     if (state.world) opts.worldCode = state.world;
+    if (state.category) opts.category = state.category;
     if (state.q) opts.q = state.q;
     try {
       state.objects = await readObjects(opts);
@@ -763,6 +1316,12 @@
 
   async function setWorld(code) {
     state.world = code;
+    await reloadObjects();
+    await render();
+  }
+
+  async function setCategory(code) {
+    state.category = code;
     await reloadObjects();
     await render();
   }
@@ -818,6 +1377,43 @@
     });
   }
 
+  /* Story-kind filters live in their own group so the world chips keep their
+     exact shape (and count). Options come from the archive itself, so a kind
+     with no stories can never appear. */
+  async function buildCategoryFilters() {
+    if (!refs.catFilters) return;
+    var seen = {};
+    var order = [];
+    var list = state.allObjects || [];
+    for (var i = 0; i < list.length; i++) {
+      var cats = list[i].categories || [];
+      for (var j = 0; j < cats.length; j++) {
+        if (!seen[cats[j]]) {
+          seen[cats[j]] = true;
+          order.push(cats[j]);
+        }
+      }
+    }
+    order.sort();
+    var html = '<button type="button" class="chip chip--cat" data-category="" aria-pressed="true">All kinds</button>';
+    for (var k = 0; k < order.length; k++) {
+      html +=
+        '<button type="button" class="chip chip--cat" data-category="' + escapeHtml(order[k]) +
+        '" aria-pressed="false">' + escapeHtml(categoryLabel(order[k])) + "</button>";
+    }
+    refs.catFilters.innerHTML = html;
+
+    Array.prototype.forEach.call(refs.catFilters.children, function (btn) {
+      btn.addEventListener("click", function () {
+        var code = btn.getAttribute("data-category") || null;
+        Array.prototype.forEach.call(refs.catFilters.children, function (c) {
+          c.setAttribute("aria-pressed", c === btn ? "true" : "false");
+        });
+        setCategory(code);
+      });
+    });
+  }
+
   function bindSearch() {
     if (!refs.search) return;
 
@@ -861,8 +1457,30 @@
     if (refs.record) {
       refs.record.addEventListener("click", function (e) {
         var mark = e.target.closest(".map-mark");
-        if (!mark) return;
-        selectObject(Number(mark.getAttribute("data-id")), { keyboard: isKeyboardClick(e) });
+        if (mark) {
+          selectObject(Number(mark.getAttribute("data-id")), { keyboard: isKeyboardClick(e) });
+          return;
+        }
+        // Previous / next story navigation.
+        var nav = e.target.closest("[data-nav]");
+        if (nav) {
+          selectObject(Number(nav.getAttribute("data-nav")), { keyboard: isKeyboardClick(e) });
+          return;
+        }
+        // Reading controls: text size and focus mode.
+        var tool = e.target.closest("[data-read]");
+        if (tool) {
+          var action = tool.getAttribute("data-read");
+          if (action === "smaller" && state.readSize > -2) state.readSize -= 1;
+          if (action === "larger" && state.readSize < 2) state.readSize += 1;
+          if (action === "focus") {
+            state.focusMode = !state.focusMode;
+            // Focus is a reading posture, not a place: return to the top.
+            refs.record.scrollTop = 0;
+          }
+          render();
+          return;
+        }
       });
 
       refs.record.addEventListener("keydown", function (e) {
@@ -872,6 +1490,11 @@
         e.preventDefault();
         selectObject(Number(mark.getAttribute("data-id")), { keyboard: true });
       });
+
+      // Reading progress follows the record column's own scroll.
+      refs.record.addEventListener("scroll", function () {
+        updateReadProgress();
+      }, { passive: true });
     }
   }
 
@@ -927,9 +1550,11 @@
     refs.app = document.querySelector(".app");
 
     await buildFilters();
+    await buildCategoryFilters();
     bindSearch();
     wireList();
     bindForm();
+    bindNarr();
 
     if (!bridge) {
       state.fatal = "The archive did not open.";
@@ -955,6 +1580,7 @@
     // Rebuild the filter chips from the worlds that actually answered, so the
     // rail cannot disagree with the database.
     await buildFilters();
+    await buildCategoryFilters();
     await render();
   }
 

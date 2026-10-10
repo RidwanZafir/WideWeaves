@@ -114,6 +114,8 @@ const REQUIRED = [
   "/src/preload.js",
   "/src/renderer-handlers.js",
   "/src/seed.js",
+  "/src/stories-moon.js",
+  "/src/stories-mars.js",
   "/src/window.js",
   "/node_modules/sql.js/package.json",
   "/node_modules/sql.js/dist/sql-wasm.js",

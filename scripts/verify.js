@@ -66,7 +66,7 @@ async function main() {
   const worldCount = call("archive:world-count");
   const objectCount = call("archive:object-count");
   check("worlds seeded", worldCount === 2, "got " + worldCount);
-  check("objects seeded", objectCount === 5, "got " + objectCount);
+  check("objects seeded (8 Moon + 10 Mars)", objectCount === 18, "got " + objectCount);
 
   console.log("\n== archive:worlds ==");
   const worlds = call("archive:worlds");
@@ -75,7 +75,7 @@ async function main() {
 
   console.log("\n== archive:objects (all) ==");
   const all = call("archive:objects");
-  check("all objects returned", all.length === 5, "got " + all.length);
+  check("all objects returned", all.length === 18, "got " + all.length);
   const first = all[0];
   check(
     "object row has the fields the rail uses",
@@ -92,8 +92,8 @@ async function main() {
   console.log("\n== archive:objects (world filter) ==");
   const moon = call("archive:objects", { worldCode: "moon" });
   const mars = call("archive:objects", { worldCode: "mars" });
-  check("moon filter", moon.length === 3, "got " + moon.length);
-  check("mars filter", mars.length === 2, "got " + mars.length);
+  check("moon filter (8 stories)", moon.length === 8, "got " + moon.length);
+  check("mars filter (10 stories)", mars.length === 10, "got " + mars.length);
   check(
     "every moon row is the Moon",
     moon.every(function (o) {
@@ -108,10 +108,10 @@ async function main() {
     });
   };
 
-  // "Apollo" appears in Apollo 11's name AND inside Surveyor 1's lesson, so a
-  // correct search returns both. That is the lesson-search working, not a bug.
+  // "Apollo" now runs through several full narratives, so a correct search
+  // returns a shelf of them. That is the full-text search working, not a bug.
   const broad = call("archive:objects", { q: "Apollo" });
-  check("broad term matches name and lesson", broad.length === 2, JSON.stringify(names(broad)));
+  check("broad term matches names, lessons and narratives", broad.length >= 4, JSON.stringify(names(broad)));
   check(
     "broad term still includes the Apollo record",
     names(broad).indexOf("Apollo 11 descent stage") !== -1,
@@ -119,14 +119,24 @@ async function main() {
   );
 
   // A term present in exactly one record must return exactly one.
-  const exact = call("archive:objects", { q: "Apollo 11" });
-  check("specific term narrows to one record", exact.length === 1 && exact[0].missionCode === "Apollo 11", JSON.stringify(names(exact)));
+  const exact = call("archive:objects", { q: "Sagan Memorial" });
+  check("specific term narrows to one record", exact.length === 1 && exact[0].missionCode === "Pathfinder", JSON.stringify(names(exact)));
 
   const lessonHits = call("archive:objects", { q: "collision" });
-  check("search reaches into lessons", lessonHits.length === 1 && lessonHits[0].name === "Luna 2", JSON.stringify(names(lessonHits)));
+  check("search reaches into lessons", lessonHits.length >= 1 && names(lessonHits).indexOf("Luna 2") !== -1, JSON.stringify(names(lessonHits)));
 
-  const codeHit = call("archive:objects", { q: "ExoMars" });
+  const codeHit = call("archive:objects", { q: "Schiaparelli EDM" });
   check("search reaches mission codes", codeHit.length === 1 && codeHit[0].name === "Schiaparelli EDM lander", JSON.stringify(names(codeHit)));
+
+  const narrativeHits = call("archive:objects", { q: "silica" });
+  check("search reaches into full narratives", narrativeHits.length >= 1 && names(narrativeHits).indexOf("Spirit") !== -1, JSON.stringify(names(narrativeHits)));
+
+  const catHits = call("archive:objects", { category: "lost-mission" });
+  check(
+    "category filter returns only that kind",
+    catHits.length >= 3 && catHits.every((o) => (o.categories || []).indexOf("lost-mission") !== -1),
+    JSON.stringify(names(catHits))
+  );
 
   const none = call("archive:objects", { q: "zzzzz" });
   check("no match returns empty array", Array.isArray(none) && none.length === 0, JSON.stringify(none));
@@ -141,6 +151,51 @@ async function main() {
   check("source shape", detail.sources[0].kind && detail.sources[0].title, JSON.stringify(detail.sources[0]));
   const video = detail.sources.find((s) => s.kind === "Video");
   check("a video source is attached", !!video && /youtube\.com\/watch\?v=/.test(video.nasaUrl || ""), JSON.stringify(video));
+  check("detail carries a subtitle", !!detail.subtitle, JSON.stringify(detail.subtitle));
+  check(
+    "detail carries a full narrative",
+    Array.isArray(detail.narrative) && detail.narrative.length >= 4 &&
+      detail.narrative.every((s) => s.h && Array.isArray(s.p) && s.p.length > 0),
+    "sections=" + (detail.narrative && detail.narrative.length)
+  );
+  check("detail carries categories", Array.isArray(detail.categories) && detail.categories.length >= 1, JSON.stringify(detail.categories));
+  check("detail carries reading time", typeof detail.readingMinutes === "number" && detail.readingMinutes > 0, JSON.stringify(detail.readingMinutes));
+  check("detail carries a hero image", !!detail.heroImage, JSON.stringify(detail.heroImage));
+
+  console.log("\n== every story is complete ==");
+  let incomplete = 0;
+  for (const o of all) {
+    const d = call("archive:object", o.id);
+    const okNarrative = Array.isArray(d.narrative) && d.narrative.length >= 4 &&
+      d.narrative.every((s) => s.h && Array.isArray(s.p) && s.p.join(" ").length > 100);
+    const okRest = d.subtitle && d.categories.length >= 1 && d.sources.length >= 1 && d.readingMinutes > 0;
+    if (!okNarrative || !okRest) {
+      incomplete++;
+      console.log("  INCOMPLETE  " + o.name);
+    }
+  }
+  check("all 18 stories have full narratives, subtitles, categories and sources", incomplete === 0, incomplete + " incomplete");
+
+  console.log("\n== preserved evidence ==");
+  const apollo = call("archive:object", all.find((o) => o.name === "Apollo 11 descent stage").id);
+  check(
+    "Apollo 11 moonwalk film preserved",
+    apollo.sources.some((s) => (s.nasaUrl || "") === "https://www.youtube.com/watch?v=S9HdPi9Ikhk"),
+    "film link"
+  );
+  const schia = call("archive:object", all.find((o) => o.name === "Schiaparelli EDM lander").id);
+  check(
+    "Schiaparelli photo and film preserved",
+    schia.sources.some((s) => (s.nasaUrl || "") === "https://images.nasa.gov/details-PIA21131") &&
+      schia.sources.some((s) => (s.nasaUrl || "") === "https://www.youtube.com/watch?v=C43KXGQuUuY"),
+    "photo + film links"
+  );
+  const surveyor = call("archive:object", all.find((o) => o.name === "Surveyor 1").id);
+  check(
+    "Surveyor 1 LRO photo preserved",
+    surveyor.sources.some((s) => (s.nasaUrl || "") === "https://images.nasa.gov/details-PIA12910"),
+    "photo link"
+  );
   const flagged = call("archive:objects", {});
   check("the list flags media per record", flagged.every((o) => typeof o.hasVideo === "boolean" && typeof o.hasPhoto === "boolean"), JSON.stringify(flagged.map((o) => [o.name, o.hasVideo, o.hasPhoto])));
   check("Luna 2 flags its footage", flagged.find((o) => o.name === "Luna 2").hasVideo === true, "hasVideo");

@@ -53,7 +53,15 @@ const ADDITIVE_COLUMNS = [
   { table: "objects", column: "mark", definition: "TEXT" },
   { table: "sources", column: "nasa_id", definition: "TEXT" },
   { table: "sources", column: "nasa_url", definition: "TEXT" },
-  { table: "sources", column: "nasa_caption", definition: "TEXT" }
+  { table: "sources", column: "nasa_caption", definition: "TEXT" },
+  // Storytelling archive (seed v3): full narrative + reader metadata. All
+  // nullable so archives written by older builds migrate in place.
+  { table: "objects", column: "subtitle", definition: "TEXT" },
+  { table: "objects", column: "narrative", definition: "TEXT" },
+  { table: "objects", column: "hero_image", definition: "TEXT" },
+  { table: "objects", column: "hero_credit", definition: "TEXT" },
+  { table: "objects", column: "categories", definition: "TEXT" },
+  { table: "objects", column: "reading_minutes", definition: "INTEGER" }
 ];
 
 function migrate() {
@@ -159,6 +167,13 @@ async function initDb(options = {}) {
         era TEXT,
         mission_code TEXT,
         year INTEGER,
+        -- Storytelling archive (seed v3). narrative/categories are JSON text.
+        subtitle TEXT,
+        narrative TEXT,
+        hero_image TEXT,
+        hero_credit TEXT,
+        categories TEXT,
+        reading_minutes INTEGER,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (world_id) REFERENCES worlds(id)

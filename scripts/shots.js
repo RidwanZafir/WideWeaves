@@ -86,7 +86,7 @@ async function main() {
   await waitFor(`!!(window.__abnf3d && window.__abnf3d.ok) || !!document.querySelector('.map-fallback:not([hidden]) .map-ground')`, 'the front door to draw');
   await run(`(window.__abnf3d && window.__abnf3d.pause) ? window.__abnf3d.pause() : null`);
   await sleep(250);
-  await shot("01-intro", "The observation viewport: two worlds, five things left on them");
+  await shot("01-intro", "The observation viewport: two worlds, eighteen things left on them");
 
   // 2 — a well-documented record, the happy path
   await run(`Array.from(document.querySelectorAll('#record-list .row'))

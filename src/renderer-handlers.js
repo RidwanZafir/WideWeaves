@@ -43,6 +43,16 @@ function escapeLike(value) {
   return value.replace(/[\\%_]/g, (ch) => "\\" + ch);
 }
 
+function parseJsonArray(text) {
+  if (!text) return [];
+  try {
+    const v = JSON.parse(text);
+    return Array.isArray(v) ? v : [];
+  } catch (err) {
+    return [];
+  }
+}
+
 function registerHandlers({ ipcMain }) {
   ipcMain.handle("archive:world-count", () => {
     const db = getDb();
@@ -76,13 +86,21 @@ function registerHandlers({ ipcMain }) {
       params.push(worldCode);
     }
 
+    // Categories travel as a JSON array; a quoted LIKE match avoids prefix
+    // collisions between tags ("robot" vs "robotic-explorer").
+    const category = asNonEmptyText(opts.category, 60);
+    if (category) {
+      where.push(`o.categories LIKE ? ESCAPE '\\'`);
+      params.push(`%"${escapeLike(category)}"%`);
+    }
+
     const term = asNonEmptyText(opts.q, QUERY_MAX);
     if (term) {
       const q = `%${escapeLike(term)}%`;
       where.push(
-        `(o.name LIKE ? ESCAPE '\\' OR o.mission_code LIKE ? ESCAPE '\\' OR o.summary LIKE ? ESCAPE '\\' OR o.lesson LIKE ? ESCAPE '\\')`
+        `(o.name LIKE ? ESCAPE '\\' OR o.mission_code LIKE ? ESCAPE '\\' OR o.summary LIKE ? ESCAPE '\\' OR o.lesson LIKE ? ESCAPE '\\' OR o.subtitle LIKE ? ESCAPE '\\' OR o.narrative LIKE ? ESCAPE '\\' OR o.categories LIKE ? ESCAPE '\\')`
       );
-      params.push(q, q, q, q);
+      params.push(q, q, q, q, q, q, q);
     }
 
     const whereSql = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
@@ -94,6 +112,7 @@ function registerHandlers({ ipcMain }) {
           o.mark,
           o.era, o.mission_code, o.year, o.certainty, o.status,
           o.location_note, w.name AS world_name, w.code AS world_code,
+          o.subtitle, o.categories, o.reading_minutes, o.hero_image,
           EXISTS(SELECT 1 FROM sources s WHERE s.object_id = o.id AND s.nasa_url LIKE '%youtube.com%') AS has_video,
           EXISTS(SELECT 1 FROM sources s WHERE s.object_id = o.id AND s.nasa_id LIKE 'PIA%') AS has_photo
         FROM objects o
@@ -104,9 +123,12 @@ function registerHandlers({ ipcMain }) {
             WHEN '1950s' THEN 1
             WHEN '1960s' THEN 2
             WHEN 'Apollo' THEN 3
-            WHEN 'Mars landing era' THEN 4
-            WHEN '2010s' THEN 5
-            ELSE 6
+            WHEN '1970s' THEN 4
+            WHEN 'Mars landing era' THEN 5
+            WHEN '1990s' THEN 6
+            WHEN '2000s' THEN 7
+            WHEN '2010s' THEN 8
+            ELSE 9
           END,
           o.sort_title
       `,
@@ -133,10 +155,14 @@ function registerHandlers({ ipcMain }) {
       // The world's stable code travels with the row so the renderer can pick
       // that world's ground without parsing a display name.
       worldCode: r[12],
+      subtitle: r[13] || "",
+      categories: parseJsonArray(r[14]),
+      readingMinutes: r[15] == null ? null : Number(r[15]),
+      heroImage: r[16] || "",
       // Media flags so the rail can say which records carry footage before
       // they are opened. LIKE patterns are constants, not user input.
-      hasVideo: r[13] === 1,
-      hasPhoto: r[14] === 1
+      hasVideo: r[17] === 1,
+      hasPhoto: r[18] === 1
     }));
   });
 
@@ -155,6 +181,8 @@ function registerHandlers({ ipcMain }) {
           o.status, o.status_note, o.location_note,
           o.certainty, o.certainty_note, o.mark,
           o.era, o.mission_code, o.year,
+          o.subtitle, o.narrative, o.hero_image, o.hero_credit,
+          o.categories, o.reading_minutes,
           w.code AS world_code, w.name AS world_name
         FROM objects o
         JOIN worlds w ON w.id = o.world_id
@@ -195,8 +223,14 @@ function registerHandlers({ ipcMain }) {
       era: r[13],
       missionCode: r[14],
       year: r[15],
-      worldCode: r[16],
-      worldName: r[17],
+      subtitle: r[16] || "",
+      narrative: parseJsonArray(r[17]),
+      heroImage: r[18] || "",
+      heroCredit: r[19] || "",
+      categories: parseJsonArray(r[20]),
+      readingMinutes: r[21] == null ? null : Number(r[21]),
+      worldCode: r[22],
+      worldName: r[23],
       stakeholders,
       sources,
       nextActions

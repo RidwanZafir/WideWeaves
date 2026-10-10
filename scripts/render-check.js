@@ -161,10 +161,10 @@ async function main() {
   );
 
   const rowCount = await run("document.querySelectorAll('#record-list li').length");
-  check("rail lists all seeded records", rowCount === 5, `rows=${rowCount}`);
+  check("rail lists all seeded records", rowCount === 18, `rows=${rowCount}`);
   check(
     "rail count label is truthful",
-    (await run("document.getElementById('rail-count').textContent")) === "5 records",
+    (await run("document.getElementById('rail-count').textContent")) === "18 records",
     await run("document.getElementById('rail-count').textContent")
   );
 
@@ -338,8 +338,8 @@ async function main() {
   })()`);
   check("the pixel probes ran without throwing", !map.error, map.error || "ok");
   check("the map draws a ground row per world", map.rows === 2, `rows=${map.rows}`);
-  check("the map plants one stake per record", map.stakes === 5 && map.buttons === 5, `stakes=${map.stakes} buttons=${map.buttons}`);
-  check("each stake carries its own certainty tone", map.tones.split(",").filter(Boolean).length === 5, map.tones);
+  check("the map plants one stake per record", map.stakes === 18 && map.buttons === 18, `stakes=${map.stakes} buttons=${map.buttons}`);
+  check("each stake carries its own certainty tone", map.tones.split(",").filter(Boolean).length === 18, map.tones);
   check(
     "the map draws a different ground per world",
     map.tile === "ground-moon.png" && map.secondGround === "ground-mars.png",
@@ -359,8 +359,9 @@ async function main() {
    * drew the same silhouette and only its colour differed — so the map could say
    * how well something was known and never what it was. It was replaced with a
    * stronger contract, not a looser one: every mark must resolve to an authored
-   * marker sprite, the five records must actually produce five different shapes,
-   * and each must be drawn at its authored size rather than scaled.
+   * marker sprite, the archive's records must reuse exactly the five authored
+   * shapes (no invented sixth), and each must be drawn at its authored size
+   * rather than scaled.
    */
   const MARKER_SPRITES = [
     "mark-lander.png",
@@ -372,18 +373,18 @@ async function main() {
   const masks = map.stakeMasks || [];
   check(
     "every mark is drawn from an authored marker sprite",
-    masks.length === 5 && masks.every((m) => MARKER_SPRITES.indexOf(m) !== -1),
-    masks.join(", ")
+    masks.length === 18 && masks.every((m) => MARKER_SPRITES.indexOf(m) !== -1),
+    masks.slice(0, 6).join(", ") + " ..."
   );
   check(
-    "the five records produce five different silhouettes",
+    "the eighteen records reuse the five authored silhouettes",
     new Set(masks).size === 5,
     `${new Set(masks).size} distinct of ${masks.length}`
   );
   check(
     "every marker is drawn at its authored 16x28 rather than scaled",
-    (map.stakeSizes || []).length === 5 && (map.stakeSizes || []).every((s) => s === "16x28"),
-    (map.stakeSizes || []).join(", ")
+    (map.stakeSizes || []).length === 18 && (map.stakeSizes || []).every((s) => s === "16x28"),
+    (map.stakeSizes || []).slice(0, 6).join(", ") + " ..."
   );
   check("the marks are still 16x28 at source", map.stakeSize === "16x28", String(map.stakeSize));
 
@@ -431,7 +432,18 @@ async function main() {
       sources: p.querySelectorAll('.entry').length,
       people: p.querySelectorAll('.person').length,
       actions: p.querySelectorAll('.action').length,
-      hasForm: !!document.getElementById('action-form')
+      hasForm: !!document.getElementById('action-form'),
+      standfirst: r.querySelector('.standfirst') ? r.querySelector('.standfirst').textContent.trim() : null,
+      storySections: r.querySelectorAll('.narrative .story').length,
+      hero: !!r.querySelector('.hero-fig img'),
+      readMeta: r.querySelector('.read-meta') ? r.querySelector('.read-meta').textContent.trim() : null,
+      hasToolbar: !!r.querySelector('.read-toolbar'),
+      hasNarr: !!r.querySelector('.narr'),
+      narrToggle: r.querySelector('[data-narr="toggle"]') ? r.querySelector('[data-narr="toggle"]').textContent.trim() : null,
+      rateOpts: r.querySelectorAll('[data-narr="rate"] option').length,
+      hasProgress: !!r.querySelector('.read-progress'),
+      hasNav: !!r.querySelector('.record-nav'),
+      catChips: Array.from(document.querySelectorAll('#category-filters .chip')).map(c => c.textContent.trim())
     };
   })()`);
 
@@ -443,12 +455,26 @@ async function main() {
   check("stakeholders are attached", rec.people >= 2, `people=${rec.people}`);
   check("a starter next action exists", rec.actions >= 1, `actions=${rec.actions}`);
   check("the next-action form is present", rec.hasForm, "form present");
+  check("the story opens with its subtitle", !!rec.standfirst, (rec.standfirst || "").slice(0, 60));
+  check("the full narrative renders as sections", rec.storySections >= 4, `sections=${rec.storySections}`);
+  check("the record carries its hero image", rec.hero, "hero present");
+  check("reading metadata names the world and length", !!rec.readMeta && /min read/.test(rec.readMeta), rec.readMeta);
+  check("reader controls are present", rec.hasToolbar, "toolbar present");
+  check("the narration player is present", rec.hasNarr, "player present");
+  check("the narration toggle invites listening", !!rec.narrToggle && /Listen|Resume|Pause/.test(rec.narrToggle), rec.narrToggle);
+  check("narration offers four playback speeds", rec.rateOpts === 4, `rates=${rec.rateOpts}`);
+  check("reading progress is on the page", rec.hasProgress, "progress present");
+  check("previous/next story navigation is present", rec.hasNav, "nav present");
+  check("story-kind filters are offered", rec.catChips.length >= 3, rec.catChips.join(" | "));
 
   // ---- search -------------------------------------------------------------
+  // The full narrative is searchable, so the probe uses a term only one
+  // record carries ("Schiaparelli EDM" — the category record mentions
+  // Schiaparelli but never the EDM designation).
   const beforeSearch = await run("document.querySelectorAll('#record-list li').length");
   await run(`(() => {
     const s = document.getElementById('search');
-    s.value = 'Schiaparelli';
+    s.value = 'Schiaparelli EDM';
     s.dispatchEvent(new Event('input', { bubbles: true }));
   })()`);
   await sleep(500);
@@ -467,7 +493,7 @@ async function main() {
   await sleep(500);
   check(
     "clearing the search restores the full rail",
-    (await run("document.querySelectorAll('#record-list li').length")) === 5,
+    (await run("document.querySelectorAll('#record-list li').length")) === 18,
     "restored"
   );
 
@@ -496,7 +522,7 @@ async function main() {
     const rows = Array.from(document.querySelectorAll('#record-list li .row-meta')).map(e => e.textContent);
     return { n: rows.length, allMars: rows.every(t => /Mars/i.test(t)), sample: rows[0] || '' };
   })()`);
-  check("Mars filter narrows the rail", mars.n > 0 && mars.n < 5, `rows=${mars.n}`);
+  check("Mars filter narrows the rail", mars.n > 0 && mars.n < 18, `rows=${mars.n}`);
   check("every filtered row is a Mars record", mars.allMars, mars.sample.trim());
 
   // Filtering the rail must not throw away the record the reader had open.
@@ -517,7 +543,7 @@ async function main() {
   await sleep(450);
   check(
     "returning to all worlds restores the rail",
-    (await run("document.querySelectorAll('#record-list li').length")) === 5,
+    (await run("document.querySelectorAll('#record-list li').length")) === 18,
     "restored"
   );
   check(
@@ -670,8 +696,8 @@ async function main() {
   check("the bundle loaded (window.ABNF3D exists)", gl3.hasHook, gl3.hasHook ? "present" : "missing");
   check("the Three.js viewport came up", gl3.ok, gl3.ok ? "scene live" : "scene did not init");
   check("the viewport is on screen and the 2D fallback is not", gl3.viewportShown && gl3.fallbackHidden, `viewport=${gl3.viewportShown} fallback=${gl3.fallbackHidden}`);
-  check("all five records are planted in the scene", gl3.markerCount === 5, `markers=${gl3.markerCount}`);
-  check("the five marks are five different silhouettes", gl3.distinctMarks === 5, `distinct=${gl3.distinctMarks}`);
+  check("all eighteen records are planted in the scene", gl3.markerCount === 18, `markers=${gl3.markerCount}`);
+  check("the eighteen marks reuse the five authored silhouettes", gl3.distinctMarks === 5, `distinct=${gl3.distinctMarks}`);
   check(
     "the viewport draws low and blits up (pixelation contract)",
     Array.isArray(gl3.pixelTarget) && gl3.pixelTarget[0] <= 512 && gl3.pixelTarget[1] <= 320,

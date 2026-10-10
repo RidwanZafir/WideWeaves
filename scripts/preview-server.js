@@ -73,7 +73,12 @@ async function main() {
     const d = byId.get(row.id);
     return Object.assign({}, row, {
       worldCode: d ? d.worldCode : null,
-      lesson: d ? d.lesson : null
+      lesson: d ? d.lesson : null,
+      subtitle: d ? d.subtitle : "",
+      narrative: d ? d.narrative : [],
+      categories: d ? d.categories : [],
+      readingMinutes: d ? d.readingMinutes : null,
+      heroImage: d ? d.heroImage : ""
     });
   });
 
@@ -104,8 +109,12 @@ async function main() {
       var q = opts.q ? String(opts.q).toLowerCase() : "";
       var rows = f.list.filter(function (o) {
         if (opts.worldCode && o.worldCode !== opts.worldCode) return false;
+        if (opts.category && (o.categories || []).indexOf(opts.category) === -1) return false;
         if (!q) return true;
-        return like(o.name, q) || like(o.missionCode, q) || like(o.summary, q) || like(o.lesson, q);
+        var narrativeText = (o.narrative || []).map(function (s) {
+          return s.h + " " + (s.p || []).join(" ");
+        }).join(" ");
+        return like(o.name, q) || like(o.missionCode, q) || like(o.summary, q) || like(o.lesson, q) || like(o.subtitle, q) || like(narrativeText, q) || like((o.categories || []).join(" "), q);
       });
       return Promise.resolve(rows.map(function (o) { return Object.assign({}, o); }));
     },
