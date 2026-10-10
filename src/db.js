@@ -61,7 +61,10 @@ const ADDITIVE_COLUMNS = [
   { table: "objects", column: "hero_image", definition: "TEXT" },
   { table: "objects", column: "hero_credit", definition: "TEXT" },
   { table: "objects", column: "categories", definition: "TEXT" },
-  { table: "objects", column: "reading_minutes", definition: "INTEGER" }
+  { table: "objects", column: "reading_minutes", definition: "INTEGER" },
+  // Flight lines (seed v5): dated milestones per story, JSON text. Nullable
+  // like everything above so older archives migrate in place.
+  { table: "objects", column: "timeline", definition: "TEXT" }
 ];
 
 function migrate() {
@@ -168,12 +171,14 @@ async function initDb(options = {}) {
         mission_code TEXT,
         year INTEGER,
         -- Storytelling archive (seed v3). narrative/categories are JSON text.
+        -- Flight lines (seed v5): timeline is JSON text too.
         subtitle TEXT,
         narrative TEXT,
         hero_image TEXT,
         hero_credit TEXT,
         categories TEXT,
         reading_minutes INTEGER,
+        timeline TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (world_id) REFERENCES worlds(id)

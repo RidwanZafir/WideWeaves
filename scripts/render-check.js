@@ -200,7 +200,7 @@ async function main() {
       flow: getComputedStyle(document.querySelector('.workspace')).display
     };
   })()`);
-  check("stylesheet applied (void canvas)", styled.bg === "rgb(0, 0, 0)", styled.bg);
+  check("stylesheet applied (near-black canvas)", styled.bg === "rgb(14, 16, 19)", styled.bg);
   check("stylesheet applied (serif/sans stack present)", /Iowan|Palatino|Georgia|Inter|Segoe/i.test(styled.font), styled.font);
   check("single-column mission flow is live", styled.flow === "block", `display=${styled.flow}`);
   check("rail rows have real layout height", styled.rowHeight > 30, `h=${styled.rowHeight}`);
@@ -217,9 +217,9 @@ async function main() {
     "fallback visible, viewport hidden"
   );
 
-  // ---- the mission-control contract --------------------------------------
-  // Void black, hairline outlines, ghost buttons (4px, never filled), pill
-  // toggles (32px), raw-edged imagery, zero elevation — asserted here
+  // ---- the archival contract ---------------------------------------------
+  // Near-black canvas, off-white ink, one rust accent; square controls,
+  // raw-edged imagery, unboxed sections, zero elevation — asserted here
   // rather than trusted to the stylesheet.
   const flat = await run(`(() => {
     const offenders = [];
@@ -233,37 +233,29 @@ async function main() {
   })()`);
   check("every surface is flat (no gradient fills)", flat.length === 0, flat.slice(0, 3).join(" | ") || "flat");
 
-  const ghostRadius = function () {
-    const els = Array.from(document.querySelectorAll('.btn, .toolbtn'));
+  const squareControls = function () {
+    const els = Array.from(document.querySelectorAll('.btn, .toolbtn, .chip, .search, .field input'));
     if (!els.length) return 'none present';
-    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '4px');
-    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'ghosts-4px';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '0px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'square-controls';
   };
-  check("actions are 4px ghost outlines", await run(`(${ghostRadius.toString()})()`), "ghosts-4px");
-
-  const toggleRadius = function () {
-    const els = Array.from(document.querySelectorAll('.chip'));
-    if (!els.length) return 'none present';
-    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '32px');
-    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'toggles-32px';
-  };
-  check("filter toggles share the 32px pill", await run(`(${toggleRadius.toString()})()`), "toggles-32px");
-
-  const searchPill = function () {
-    const el = document.querySelector('.search');
-    if (!el) return 'none present';
-    const v = parseFloat(getComputedStyle(el).borderTopLeftRadius);
-    return v >= 100 ? 'search-pill' : 'search=' + getComputedStyle(el).borderTopLeftRadius;
-  };
-  check("search is the pill input", await run(`(${searchPill.toString()})()`), "search-pill");
+  check("controls are square-cut", await run(`(${squareControls.toString()})()`), "square-controls");
 
   const rawEdges = function () {
-    const els = Array.from(document.querySelectorAll('.feature-thumb'));
+    const els = Array.from(document.querySelectorAll('.media-thumb-wrap, .video-thumb-wrap, .feature-thumb, .hero-img'));
     if (!els.length) return 'none present';
     const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '0px');
     return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'raw-edges';
   };
   check("imagery stays raw-edged", await run(`(${rawEdges.toString()})()`), "raw-edges");
+
+  const flatSections = function () {
+    const els = Array.from(document.querySelectorAll('.narr, .block--lesson, .record-notice, .form-error, .collection-card'));
+    if (!els.length) return 'none present';
+    const bad = els.filter((el) => getComputedStyle(el).borderTopLeftRadius !== '0px');
+    return bad.length ? bad.map((el) => (el.className || el.tagName)).join(',') : 'flat-sections';
+  };
+  check("sections carry no card geometry", await run(`(${flatSections.toString()})()`), "flat-sections");
 
   const noElevation = function () {
     const els = Array.from(document.querySelectorAll('.btn, .chip, .toolbtn, .feature'));
@@ -468,6 +460,10 @@ async function main() {
       actions: p.querySelectorAll('.action').length,
       hasForm: !!document.getElementById('action-form'),
       standfirst: r.querySelector('.standfirst') ? r.querySelector('.standfirst').textContent.trim() : null,
+      dateline: r.querySelector('.dateline') ? r.querySelector('.dateline').textContent.trim() : null,
+      specCells: r.querySelectorAll('.spec-grid dt').length,
+      tNodes: r.querySelectorAll('.timeline .t-node').length,
+      h2face: r.querySelector('h2') ? getComputedStyle(r.querySelector('h2')).fontFamily : '',
       storySections: r.querySelectorAll('.narrative .story').length,
       hero: !!r.querySelector('.hero-fig img'),
       readMeta: r.querySelector('.read-meta') ? r.querySelector('.read-meta').textContent.trim() : null,
@@ -500,6 +496,10 @@ async function main() {
   check("a starter next action exists", rec.actions >= 1, `actions=${rec.actions}`);
   check("the next-action form is present", rec.hasForm, "form present");
   check("the story opens with its subtitle", !!rec.standfirst, (rec.standfirst || "").slice(0, 60));
+  check("the story opens with a mission dateline", !!rec.dateline && /1959|1966|1967|1969|1970|1971/.test(rec.dateline), rec.dateline);
+  check("the mission spec sheet is complete", rec.specCells >= 4, `cells=${rec.specCells}`);
+  check("the flight line carries dated milestones", rec.tNodes >= 2, `nodes=${rec.tNodes}`);
+  check("display type is literary serif", /Palatino|Georgia|Iowan/i.test(rec.h2face), rec.h2face.split(",").slice(0, 2).join(","));
   check("the full narrative renders as sections", rec.storySections >= 4, `sections=${rec.storySections}`);
   check("the record carries its hero image", rec.hero, "hero present");
   check("reading metadata names the world and length", !!rec.readMeta && /min read/.test(rec.readMeta), rec.readMeta);

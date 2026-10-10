@@ -161,20 +161,34 @@ async function main() {
   check("detail carries categories", Array.isArray(detail.categories) && detail.categories.length >= 1, JSON.stringify(detail.categories));
   check("detail carries reading time", typeof detail.readingMinutes === "number" && detail.readingMinutes > 0, JSON.stringify(detail.readingMinutes));
   check("detail carries a hero image", !!detail.heroImage, JSON.stringify(detail.heroImage));
+  check(
+    "detail carries a flight line",
+    Array.isArray(detail.timeline) && detail.timeline.length >= 2 &&
+      detail.timeline.every((n) => n.d && n.t),
+    "nodes=" + (detail.timeline && detail.timeline.length)
+  );
 
   console.log("\n== every story is complete ==");
   let incomplete = 0;
+  let thinLines = 0;
   for (const o of all) {
     const d = call("archive:object", o.id);
     const okNarrative = Array.isArray(d.narrative) && d.narrative.length >= 4 &&
       d.narrative.every((s) => s.h && Array.isArray(s.p) && s.p.join(" ").length > 100);
     const okRest = d.subtitle && d.categories.length >= 1 && d.sources.length >= 1 && d.readingMinutes > 0;
+    const okLine = Array.isArray(d.timeline) && d.timeline.length >= 2 &&
+      d.timeline.every((n) => n && n.d && n.t);
     if (!okNarrative || !okRest) {
       incomplete++;
       console.log("  INCOMPLETE  " + o.name);
     }
+    if (!okLine) {
+      thinLines++;
+      console.log("  THIN LINE  " + o.name);
+    }
   }
   check("all 18 stories have full narratives, subtitles, categories and sources", incomplete === 0, incomplete + " incomplete");
+  check("all 18 stories carry a dated flight line", thinLines === 0, thinLines + " thin");
 
   console.log("\n== preserved evidence ==");
   const apollo = call("archive:object", all.find((o) => o.name === "Apollo 11 descent stage").id);

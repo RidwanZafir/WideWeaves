@@ -24,6 +24,10 @@ const MARS_STORIES = [
     world: "mars",
     name: "Mars 3",
     subtitle: "Fourteen seconds on the surface of Mars",
+    timeline: [
+      { d: "1971", t: "Launch; the cruise to Mars runs straight into a planet-wide dust storm" },
+      { d: "2 Dec 1971", t: "Soft landing in the Ptolemaeus region; about fourteen seconds of signal" }
+    ],
     summary:
       "The Soviet lander that touched down softly — and spoke for seconds.",
     what_is:
@@ -99,6 +103,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Mars Pathfinder and Sojourner",
     subtitle: "Airbags, a backyard rover, and a new way to explore",
+    timeline: [
+      { d: "4 Jul 1997", t: "Airbag landing bounces to rest in Ares Vallis; petals open" },
+      { d: "Jul 1997", t: "Sojourner rolls out; first rock chemistry from the Martian surface" },
+      { d: "27 Sep 1997", t: "Signal stops mid-communication; both machines stay where they worked" }
+    ],
     summary:
       "The bouncing landing that delivered the first rover to Mars.",
     what_is:
@@ -176,6 +185,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Mars Global Surveyor",
     subtitle: "The mapper that redrew Mars, then went quiet",
+    timeline: [
+      { d: "Nov 1996", t: "Launch; a damaged solar panel forces a year-long improvised aerobraking" },
+      { d: "1997", t: "Mapping orbit reached; laser altimeter and camera begin the nine-year survey" },
+      { d: "2 Nov 2006", t: "Contact lost after commanding leaves it power-starved; orbit decays still" }
+    ],
     summary:
       "The orbiter that mapped Mars in detail for a decade — then fell silent.",
     what_is:
@@ -253,6 +267,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Mars Polar Lander",
     subtitle: "The silent south pole",
+    timeline: [
+      { d: "1999", t: "Launch toward the southern polar layered terrain, penetrators riding along" },
+      { d: "3 Dec 1999", t: "Entry over the pole; the expected confirmation never comes" },
+      { d: "1999–2000", t: "Searches find nothing; the review board reports the leading hypothesis" }
+    ],
     summary:
       "The lander that reached the Martian south pole — and never phoned home.",
     what_is:
@@ -329,6 +348,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Beagle 2",
     subtitle: "Found after eleven years: the watch that almost ticked",
+    timeline: [
+      { d: "Dec 2003", t: "Release from Mars Express; a silent Christmas Day on Isidis Planitia" },
+      { d: "Jan 2015", t: "Identified in orbiter images, partially deployed, parachute nearby" },
+      { d: "2015", t: "Diagnosis: unopened panels covered the antenna; millimetres from success" }
+    ],
     summary:
       "The British lander lost on arrival in 2003 — found intact from orbit in 2015.",
     what_is:
@@ -406,6 +430,12 @@ const MARS_STORIES = [
     world: "mars",
     name: "Spirit",
     subtitle: "The rover that became a lander, then a memory",
+    timeline: [
+      { d: "4 Jan 2004", t: "Landing in Gusev Crater for a 90-day mission" },
+      { d: "2004–09", t: "Columbia Hills, silica deposits, Home Plate carbonates" },
+      { d: "May 2009", t: "Breakthrough into soft sulfate sand at Troy; extraction fails" },
+      { d: "22 Mar 2010", t: "Last contact before the deep winter" }
+    ],
     summary:
       "The rover that climbed hills, survived dust, and finally sank in soft soil.",
     what_is:
@@ -483,6 +513,12 @@ const MARS_STORIES = [
     world: "mars",
     name: "Opportunity",
     subtitle: "Five thousand sols: the rover that refused to die — until the sky did",
+    timeline: [
+      { d: "25 Jan 2004", t: "Bounce into Eagle Crater; bedrock and hematite within weeks" },
+      { d: "2004–18", t: "The long traverse: Endurance, Victoria, Endeavour — over 45 kilometres" },
+      { d: "Jun 2018", t: "Planet-wide dust storm; skies go dark at noon, then silence" },
+      { d: "13 Feb 2019", t: "Mission declared complete after a thousand unanswered calls" }
+    ],
     summary:
       "The rover built for 90 days that explored for nearly 15 years.",
     what_is:
@@ -560,6 +596,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Phoenix",
     subtitle: "Touching ice at the top of the world",
+    timeline: [
+      { d: "25 May 2008", t: "Retrorocket landing at Vastitas Borealis; bright soil already showing" },
+      { d: "2008", t: "Trench-and-wait test confirms water ice; ovens, clays, perchlorates" },
+      { d: "Nov 2008", t: "Light fades and cold ends it; orbiters later see the broken panels" }
+    ],
     summary:
       "The polar lander that confirmed water ice in Martian soil.",
     what_is:
@@ -637,6 +678,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Schiaparelli EDM lander",
     subtitle: "Six minutes that ended four kilometres early",
+    timeline: [
+      { d: "19 Oct 2016", t: "Descent under parachute; the sensor saturates and the software gives up early" },
+      { d: "Oct 2016", t: "Orbiter images find the new crater, parachute and heat shield" },
+      { d: "2016", t: "Open inquiry findings become every landing review's required reading" }
+    ],
     summary: "A descent module that was meant to land softly and instead fell hard.",
     what_is:
       "The entry, descent, and landing demonstrator module of the ExoMars 2016 mission.",
@@ -713,6 +759,11 @@ const MARS_STORIES = [
     world: "mars",
     name: "Mars landing failures",
     subtitle: "A field guide to the hardest six minutes in exploration",
+    timeline: [
+      { d: "1971", t: "Mars 2 crashes in; Mars 3 lands softly and speaks for seconds" },
+      { d: "1999", t: "Mars Climate Orbiter burns up; Mars Polar Lander never phones home" },
+      { d: "2003–16", t: "Beagle 2 lands mute; Schiaparelli narrates its own fall" }
+    ],
     summary:
       "A category record for Mars hardware that arrived and was abandoned by accident.",
     what_is:

@@ -182,7 +182,7 @@ function registerHandlers({ ipcMain }) {
           o.certainty, o.certainty_note, o.mark,
           o.era, o.mission_code, o.year,
           o.subtitle, o.narrative, o.hero_image, o.hero_credit,
-          o.categories, o.reading_minutes,
+          o.categories, o.reading_minutes, o.timeline,
           w.code AS world_code, w.name AS world_name
         FROM objects o
         JOIN worlds w ON w.id = o.world_id
@@ -229,8 +229,9 @@ function registerHandlers({ ipcMain }) {
       heroCredit: r[19] || "",
       categories: parseJsonArray(r[20]),
       readingMinutes: r[21] == null ? null : Number(r[21]),
-      worldCode: r[22],
-      worldName: r[23],
+      timeline: parseJsonArray(r[22]),
+      worldCode: r[23],
+      worldName: r[24],
       stakeholders,
       sources,
       nextActions

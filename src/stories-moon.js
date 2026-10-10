@@ -31,6 +31,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Luna 2",
     subtitle: "The first human-made object to reach another world",
+    timeline: [
+      { d: "Sep 1959", t: "Launch from Baikonur; magnetometer finds no lunar magnetic field on the way out" },
+      { d: "13 Sep 1959", t: "Impact east of Mare Imbrium — the first human object to reach another world" },
+      { d: "1959", t: "Soviet pennants scattered across the impact zone; never recovered" }
+    ],
     summary:
       "The first human-made object to reach another world, and one that did not survive the meeting.",
     what_is: "A Soviet lunar probe that became the first artificial object to reach the Moon.",
@@ -105,6 +110,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Luna 9",
     subtitle: "The first soft landing — a beach ball that phoned home",
+    timeline: [
+      { d: "3 Feb 1966", t: "Soft landing in Oceanus Procellarum; petals open and steady the capsule" },
+      { d: "Feb 1966", t: "First panoramas from the surface; Jodrell Bank intercepts and publishes them" },
+      { d: "Feb 1966", t: "Batteries run down after three days; the capsule falls silent where it sits" }
+    ],
     summary:
       "The first spacecraft to land softly on the Moon and send back pictures from the surface.",
     what_is:
@@ -181,6 +191,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Surveyor 1",
     subtitle: "The robot that proved the ground would hold",
+    timeline: [
+      { d: "30 May 1966", t: "Launch; the first American spacecraft aimed at a soft lunar landing" },
+      { d: "2 Jun 1966", t: "Touchdown in Oceanus Procellarum at walking pace; footpads sink centimetres" },
+      { d: "Jan 1967", t: "Mission ends after 11,000+ images; the lander stays where it certified the ground" }
+    ],
     summary:
       "A soft-landed probe that survived its mission and then sat on the Moon for the rest of time.",
     what_is:
@@ -260,6 +275,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Surveyor 3 and its Apollo visitors",
     subtitle: "The lander that waited two years for guests",
+    timeline: [
+      { d: "20 Apr 1967", t: "Landing with a bounce in its crater; soil scoop digs Apollo's test trenches" },
+      { d: "19 Nov 1969", t: "Apollo 12 lands 180 metres away; Conrad and Bean walk to the old lander" },
+      { d: "Nov 1969", t: "Television camera retrieved and brought home; exposure report follows" }
+    ],
     summary:
       "A robotic lander visited, years later, by the Apollo 12 astronauts — who cut pieces off it and brought them home.",
     what_is:
@@ -338,6 +358,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Apollo 11 descent stage",
     subtitle: "The lower half of Eagle, still on the Sea of Tranquility",
+    timeline: [
+      { d: "20 Jul 1969", t: "Eagle lands at Tranquility Base; the descent stage becomes a launch pad" },
+      { d: "21 Jul 1969", t: "Moonwalk, then liftoff — the lower half stays exactly where it landed" },
+      { d: "Jul 1969", t: "Plaque, retroreflector and seismometer left around the stage" }
+    ],
     summary:
       "The lower half of the first lunar module that carried humans down and then stayed behind.",
     what_is: "The descent stage of Eagle, left on the Moon after the ascent stage returned to orbit.",
@@ -417,6 +442,12 @@ const MOON_STORIES = [
     world: "moon",
     name: "Lunokhod 1",
     subtitle: "The Soviet rover that drove for ten months and was found again",
+    timeline: [
+      { d: "Nov 1970", t: "Luna 17 lands in Mare Imbrium; Lunokhod rolls down the ramp" },
+      { d: "1970–71", t: "Ten-plus kilometres driven; 20,000 images and 500 soil tests" },
+      { d: "Sep 1971", t: "Signal stops; the rover sits unlocated for nearly forty years" },
+      { d: "2010", t: "Found in orbiter images; laser teams get a return off its reflector" }
+    ],
     summary:
       "The first remote-controlled rover on another world — lost for decades, then located from orbit.",
     what_is:
@@ -494,6 +525,11 @@ const MOON_STORIES = [
     world: "moon",
     name: "Apollo 15 and the Hadley rover",
     subtitle: "The first lunar road trip — science at driving speed",
+    timeline: [
+      { d: "Jul 1971", t: "Landing at Hadley–Apennine; the rover unfolds from the descent stage" },
+      { d: "1971", t: "Three drives, 28 kilometres, sixteen stations — including the Genesis Rock" },
+      { d: "1977", t: "ALSEP station falls silent; rover, tracks and stage remain on site" }
+    ],
     summary:
       "The first lunar rover mission: astronauts driving geology across Hadley Rille.",
     what_is:
@@ -571,6 +607,12 @@ const MOON_STORIES = [
     world: "moon",
     name: "The lunar laser reflectors",
     subtitle: "Mirrors still answering, fifty years on",
+    timeline: [
+      { d: "1969", t: "Apollo 11 crew sets the first array on the dust at Tranquility Base" },
+      { d: "1971", t: "Larger Apollo 14 and 15 arrays placed; ranging becomes routine science" },
+      { d: "1970–73", t: "Soviet arrays ride up on Lunokhod 1 and 2" },
+      { d: "2010", t: "Lost Lunokhod 1 reflector recovered; all five arrays still answering" }
+    ],
     summary:
       "Small mirror arrays left by astronauts and robots that scientists still bounce lasers off today.",
     what_is:

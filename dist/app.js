@@ -488,14 +488,8 @@
 
     refs.record.innerHTML =
       '<div class="intro">' +
-      '<div class="hero hero--overlay">' +
-      '<div class="viewport-wrap">' +
-      '<div class="viewport" id="viewport" hidden></div>' +
-      '<div class="map-fallback" id="map-fallback" hidden>' +
-      '<div class="map">' + map + "</div>" +
-      '<p class="map-key">Colour says how well we know it. Shape says what it is.</p>' +
-      "</div>" +
-      '<div class="hero-overlay">' +
+      '<div class="hero">' +
+      '<div class="hero-deck">' +
       '<p class="hero-eyebrow">A curatorial archive · ' + escapeHtml(eyebrow) + "</p>" +
       '<h2 class="hero-title">Abandoned but Not Forgotten</h2>' +
       '<p class="hero-lede">Every machine we left on the Moon and Mars is still out there. ' +
@@ -503,12 +497,18 @@
       "so the hardware is remembered for what it did, not only for where it stopped.</p>" +
       '<div class="hero-actions">' + overlayBtns + "</div>" +
       "</div>" +
+      '<div class="viewport-wrap">' +
+      '<div class="viewport" id="viewport" hidden></div>' +
+      '<div class="map-fallback" id="map-fallback" hidden>' +
+      '<div class="map">' + map + "</div>" +
+      '<p class="map-key">Colour says how well we know it. Shape says what it is.</p>' +
+      "</div>" +
+      "</div>" +
       "</div>" +
       '<p class="hero-caption">' +
       "<span>Drag to orbit · click a mark to open its record</span>" +
       '<span class="hero-rule">Colour is how well we know it. Shape is what it is.</span>' +
       "</p>" +
-      "</div>" +
       '<div class="collections">' + cards + "</div>" +
       '<div class="featured-row">' +
       '<p class="featured-label">Featured stories</p>' + featured +
@@ -1094,6 +1094,8 @@
 
     html += renderReadToolbar() + renderNarrPanel();
     html += renderHero(r);
+    html += renderSpec(r);
+    html += renderTimeline(r);
     html += renderNarrative(r);
     // The film comes after the complete story, never before it — and the
     // photo evidence stays its own section rather than mixing with video.
@@ -1114,6 +1116,59 @@
   /* ---- reader chrome: toolbar, hero, narrative, prev/next ----
      Everything here is additive: the five fact blocks, the evidence media,
      and the provenance panels render exactly as before. */
+
+  /* ---- mission record: dateline, spec sheet, flight line ----
+     Drawn only from fields the archive already keeps — mission, year, era,
+     site, status, reading time, and the story's own dated milestones. */
+
+  function renderDateline(r) {
+    var bits = [];
+    if (r.missionCode) bits.push(r.missionCode);
+    if (r.year != null) bits.push(String(r.year));
+    if (r.worldName) bits.push(r.worldName);
+    if (!bits.length) return "";
+    return '<p class="dateline">' + escapeHtml(bits.join(" · ")) + "</p>";
+  }
+
+  function renderSpec(r) {
+    var rows = [];
+    var add = function (k, v) {
+      if (v !== null && v !== undefined && String(v).trim() !== "") {
+        rows.push({ k: k, v: String(v) });
+      }
+    };
+    add("Mission", r.missionCode);
+    add("Year", r.year);
+    add("Era", r.era);
+    add("Site", r.locationNote);
+    add("Status", r.statusNote || r.status);
+    add("Reading", r.readingMinutes != null ? r.readingMinutes + " min" : null);
+    if (!rows.length) return "";
+    var cells = rows.map(function (row) {
+      return "<div><dt>" + escapeHtml(row.k) + "</dt><dd>" + escapeHtml(row.v) + "</dd></div>";
+    }).join("");
+    return (
+      '<div class="spec" aria-label="Mission record">' +
+      renderDateline(r) +
+      '<dl class="spec-grid">' + cells + "</dl></div>"
+    );
+  }
+
+  function renderTimeline(r) {
+    var nodes = (r && r.timeline) || [];
+    if (nodes.length < 2) return "";
+    var items = nodes.map(function (n) {
+      n = n || {};
+      return (
+        '<div class="t-node"><span class="t-date">' + escapeHtml(n.d || "") + "</span>" +
+        '<span class="t-event">' + escapeHtml(n.t || "") + "</span></div>"
+      );
+    }).join("");
+    return (
+      '<div class="timeline" aria-label="Flight line">' +
+      '<p class="timeline-label">Flight line</p>' + items + "</div>"
+    );
+  }
 
   function renderReadToolbar() {
     return (

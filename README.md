@@ -42,7 +42,7 @@ provenance last, from desktop down to the 400px window floor:
 
 | Band | Job |
 |---|---|
-| **Views** (top) | Home hero over the viewport, Moon/Mars collections, and the full story: what it is, **why it was abandoned**, what it taught, where it is now, how well we know that — plus the **complete written story** in sections, a hero image with credit, reading controls (text size, focus mode, progress), a **Listen to Story** browser-narration player (play/pause/resume/stop, 4 speeds, voice choice), film after the narrative, and previous/next story navigation. |
+| **Views** (top) | Asymmetric image-led home hero, Moon/Mars collections, and the full story: dateline, mission spec sheet, and dated flight line, then what it is, **why it was abandoned**, what it taught, where it is now, how well we know that — plus the **complete written story** in sections, a hero image with credit, discreet reading controls and narration bar, film after the narrative, photo evidence, numbered references, and previous/next story navigation. |
 | **The archive** (ledger) | Everything, filterable by world and story kind, searchable down into *narratives*, not just titles. Colour encodes how well the location is known — with a key and a text equivalent. Previews carry subtitles and reading time; the full story lives in the views above. |
 | **Provenance** (dossier) | Sources, who cares, and **what should happen next** — with a form that writes a real proposed action to SQLite. |
 
@@ -55,12 +55,13 @@ quiet page. The hand-drawn Aseprite pixel art (masthead site plan, dither grain,
 sprites) is unchanged, and **no gradient exists anywhere** — asserted by tests,
 not by taste.
 
-The visual system is mission-control darkness: void-black canvas, star-white
-tracked technical type, hairline outlines, ghost buttons that are never
-filled, pill toggles, full-bleed viewport hero with overlay text. Certainty
+The visual system is an archival documentary theme: near-black canvas,
+off-white ink, grey seconds, one muted rust accent (steel-grey for the Moon).
+Literary serif display and narrative, sans UI, mono micro-labels; square
+corners, hairline structure, asymmetric compositions per purpose. Certainty
 dots keep their four muted tones as labeled data encoding, the viewport and
 map stay as authored exhibit imagery, and there is no elevation vocabulary —
-no shadows, no cards, no panels.
+no shadows, no gradients, no enclose-everything boxes.
 
 The 2D pixel map is the viewport's **fallback, not its inferior**: if WebGL is
 unavailable the map comes back automatically. Append `#no3d` to force it. Both
@@ -110,18 +111,18 @@ npm run package     # repack from the allowlist + assert the artifact
 npm run package:prove  # verify-only + boot the real .exe + asar asset check
 ```
 
-399 automated checks across nine harnesses, zero failures. The packaged
+404 automated checks across nine harnesses, zero failures. The packaged
 `dist/` is asserted byte-identical to the verified build, and the real
 executable is launched to confirm it comes up, seeds its archive, and serves
 every sprite and NASA image out of the archive at true size.
 
 | Harness | Scope | Checks |
 |---|---|---|
-| `scripts/verify.js` | Data layer + full IPC contract + watch coverage, headless | 53 |
+| `scripts/verify.js` | Data layer + full IPC contract + watch coverage, headless | 55 |
 | `scripts/check-assets.js` | PNG stencil/tile contract for all 11 sprites (`--art` prints them as ASCII) | 44 |
 | `scripts/audit.js` | Trust boundary: LIKE wildcards, validation, orphans, foreign keys, field budget, migration | 42 |
 | `scripts/audit-window.js` | Real window: keyboard focus, failure notice, flat surfaces, boot-failure screen | 18 |
-| `scripts/render-check.js` | Real window: DOM, CSP, mission-control theme, responsive flow, workflow, persistence, narrow window, 3D viewport, reader + narration + screening room | 121 |
+| `scripts/render-check.js` | Real window: DOM, CSP, mission-control theme, responsive flow, workflow, persistence, narrow window, 3D viewport, archival documentary theme, reader + narration + screening room | 124 |
 | `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 76 |
 | `scripts/package.js --boot` | Real `.exe` boots, seeds every table, window titled | 7 |
 | `scripts/check-videos.js` | Seed-level film coverage: valid IDs, attribution, no reuse | 19 |
@@ -154,7 +155,7 @@ TALK_TRACK.md      # judge-facing talk track + 3-minute demo script
 ## Scope, honestly
 
 **Real:** schema, uncertainty model, workflow, write path, persistence,
-locked-down runtime, packaged Windows build, 399 checks.
+locked-down runtime, packaged Windows build, 404 checks.
 **Curated:** eighteen complete stories (8 Moon, 10 Mars) with full narratives,
 credible references, and preserved NASA/ESA photo and film links —
 a demonstration library, not a NASA feed. **Next:** wire the record shape to

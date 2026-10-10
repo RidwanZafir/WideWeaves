@@ -32,7 +32,7 @@ const OBJECTS = [...MOON_STORIES, ...MARS_STORIES];
  * replaced.
  */
 
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 
 function ensureMetaTable(db) {
   db.run(`CREATE TABLE IF NOT EXISTS meta (
@@ -74,8 +74,9 @@ function insertObject(db, obj, worldIds, stamp) {
       lesson, status, status_note, location_note, certainty, certainty_note,
       mark, era, mission_code, year,
       subtitle, narrative, hero_image, hero_credit, categories, reading_minutes,
+      timeline,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       worldId,
       obj.name,
@@ -99,6 +100,7 @@ function insertObject(db, obj, worldIds, stamp) {
       obj.hero_credit || null,
       obj.categories ? JSON.stringify(obj.categories) : null,
       obj.reading_minutes || null,
+      obj.timeline ? JSON.stringify(obj.timeline) : null,
       stamp,
       stamp
     ]
@@ -222,11 +224,11 @@ function backfillStories(db) {
     }
 
     const cols = db.exec(
-      "SELECT subtitle, narrative, hero_image, hero_credit, categories, reading_minutes FROM objects WHERE id = ?",
+      "SELECT subtitle, narrative, hero_image, hero_credit, categories, reading_minutes, timeline FROM objects WHERE id = ?",
       [objectId]
     );
     if (!cols.length || !cols[0].values.length) continue;
-    const [subtitle, narrative, heroImage, heroCredit, categories, readingMinutes] = cols[0].values[0];
+    const [subtitle, narrative, heroImage, heroCredit, categories, readingMinutes, timeline] = cols[0].values[0];
 
     const updates = [];
     const params = [];
@@ -236,7 +238,8 @@ function backfillStories(db) {
       ["hero_image", heroImage, obj.hero_image || null],
       ["hero_credit", heroCredit, obj.hero_credit || null],
       ["categories", categories, obj.categories ? JSON.stringify(obj.categories) : null],
-      ["reading_minutes", readingMinutes, obj.reading_minutes || null]
+      ["reading_minutes", readingMinutes, obj.reading_minutes || null],
+      ["timeline", timeline, obj.timeline ? JSON.stringify(obj.timeline) : null]
     ];
     for (const [col, current, next] of want) {
       if ((current === null || current === undefined) && next !== null && next !== undefined) {
