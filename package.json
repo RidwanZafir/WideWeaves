@@ -12,6 +12,8 @@
     "package:assets": "electron scripts/asar-asset-check.js",
     "package:prove": "npm run package:check && npm run package:boot && npm run package:assets",
     "preview": "node scripts/preview-server.js",
+    "export-web": "node scripts/export-web.js",
+    "vercel-build": "node scripts/export-web.js",
     "audit": "node scripts/audit.js",
     "audit:window": "electron scripts/audit-window.js",
     "test": "npm run audit && npm run audit:window && node scripts/verify.js && node scripts/check-assets.js && electron scripts/render-check.js"

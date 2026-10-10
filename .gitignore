@@ -11,6 +11,9 @@ local-archive/
 # packaged builds
 release/
 
+# generated static web export (built by Vercel via `node scripts/export-web.js`)
+web/
+
 # generated design captures
 shots/
 

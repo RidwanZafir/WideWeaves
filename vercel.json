@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/export-web.js",
+  "outputDirectory": "web",
+  "cleanUrls": true,
+  "trailingSlash": false
+}
