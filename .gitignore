@@ -4,6 +4,10 @@ node_modules/
 # generated archive state (lives in userData at runtime; never commit)
 data/
 
+# the curator's own archive, and a backup of it. Personal data — kept in the
+# project folder, deliberately not in version control.
+local-archive/
+
 # packaged builds
 release/
 
