@@ -111,7 +111,7 @@ npm run package     # repack from the allowlist + assert the artifact
 npm run package:prove  # verify-only + boot the real .exe + asar asset check
 ```
 
-404 automated checks across nine harnesses, zero failures. The packaged
+405 automated checks across nine harnesses, zero failures. The packaged
 `dist/` is asserted byte-identical to the verified build, and the real
 executable is launched to confirm it comes up, seeds its archive, and serves
 every sprite and NASA image out of the archive at true size.
@@ -122,7 +122,7 @@ every sprite and NASA image out of the archive at true size.
 | `scripts/check-assets.js` | PNG stencil/tile contract for all 11 sprites (`--art` prints them as ASCII) | 44 |
 | `scripts/audit.js` | Trust boundary: LIKE wildcards, validation, orphans, foreign keys, field budget, migration | 42 |
 | `scripts/audit-window.js` | Real window: keyboard focus, failure notice, flat surfaces, boot-failure screen | 18 |
-| `scripts/render-check.js` | Real window: DOM, CSP, mission-control theme, responsive flow, workflow, persistence, narrow window, 3D viewport, archival documentary theme, reader + narration + screening room | 124 |
+| `scripts/render-check.js` | Real window: DOM, CSP, mission-control theme, responsive flow, workflow, persistence, narrow window, 3D viewport, archival documentary theme, reader + narration + screening room | 125 |
 | `scripts/package.js` | Archive read-back: files present, dev artifacts absent, byte-identical `dist/` | 76 |
 | `scripts/package.js --boot` | Real `.exe` boots, seeds every table, window titled | 7 |
 | `scripts/check-videos.js` | Seed-level film coverage: valid IDs, attribution, no reuse | 19 |
@@ -155,7 +155,7 @@ TALK_TRACK.md      # judge-facing talk track + 3-minute demo script
 ## Scope, honestly
 
 **Real:** schema, uncertainty model, workflow, write path, persistence,
-locked-down runtime, packaged Windows build, 404 checks.
+locked-down runtime, packaged Windows build, 405 checks.
 **Curated:** eighteen complete stories (8 Moon, 10 Mars) with full narratives,
 credible references, and preserved NASA/ESA photo and film links —
 a demonstration library, not a NASA feed. **Next:** wire the record shape to

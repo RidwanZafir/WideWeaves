@@ -2841,6 +2841,28 @@ body {
   mask-size: 28px 28px;
 }
 
+.brand[data-go] {
+  cursor: pointer;
+}
+
+.brand-title {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brand:hover .brand-title {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .brand h1 {
   font-size: 12px;
   font-weight: 700;
@@ -4068,6 +4090,7 @@ body {
 .nav-btn:focus-visible,
 .narr-field select:focus-visible,
 .topnav button:focus-visible,
+.brand-title:focus-visible,
 .crumbs button:focus-visible,
 .index-row:focus-visible,
 .video-facade:focus-visible,

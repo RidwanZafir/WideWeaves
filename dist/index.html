@@ -20,12 +20,12 @@
          on the first real render (see the boot state in styles.css). -->
     <div class="app" data-boot="pending">
       <header class="topbar">
-        <div class="brand">
+        <div class="brand" data-go="home">
           <!-- A site plan, not a logo: a horizon with two things left standing on
                it. Drawn in Aseprite (assets-src/site-plan.aseprite), exported to
                dist/assets/, and tinted here through a CSS mask. -->
           <div class="mark" aria-hidden="true"></div>
-          <h1>Abandoned but Not Forgotten</h1>
+          <h1><button type="button" class="brand-title" data-go="home" aria-label="Abandoned but Not Forgotten — back to home">Abandoned but Not Forgotten</button></h1>
         </div>
 
         <nav class="topnav" aria-label="Primary">

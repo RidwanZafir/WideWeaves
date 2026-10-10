@@ -779,6 +779,12 @@ async function main() {
   await sleep(500);
   check("the breadcrumb returns to the front door", await run("!!document.querySelector('#record .intro .stakes')"), "intro again");
 
+  await run("document.querySelector('#record-list .row').click()");
+  await sleep(500);
+  await run(`(() => { const b = document.querySelector('.brand-title'); if (b) b.click(); })()`);
+  await sleep(500);
+  check("the header brand returns to the front door", await run("!!document.querySelector('#record .intro .stakes')"), "intro again");
+
   await run(`(() => { const b = document.querySelector('[data-world-jump="moon"]'); if (b) b.click(); })()`);
   await sleep(500);
   // Note: concise arrows returning object literals (e.g. () => ({...}))
