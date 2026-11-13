@@ -1,0 +1,56 @@
+.experience {
+  min-width: 0;
+}
+
+.tourLayout {
+  --tour-viewer-height: clamp(300px, 48svh, 460px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+@media (min-width: 1280px) {
+  .tourLayout {
+    --tour-viewer-height: clamp(330px, 62svh, 720px);
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.78fr);
+  }
+
+  .viewerPanel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .chapterPanel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+.experience :is(h1, h2, h3, p, dd, figcaption) {
+  overflow-wrap: anywhere;
+}
+
+.experience h1 {
+  text-wrap: balance;
+}
+
+.experience p {
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.experience :global(.data),
+.experience :global(.eyebrow) {
+  font-size: 0.6875rem;
+}
+
+.experience :global(.grid) > * {
+  min-width: 0;
+}
+
+@layer components {
+  .experience :is(button, summary) {
+    min-height: 2.75rem;
+  }
+}

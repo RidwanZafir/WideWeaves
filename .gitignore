@@ -1,22 +1,15 @@
-# dependencies
 node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+.env
+.env.*
+!.env.example
+!.env.*.example
 
-# generated archive state (lives in userData at runtime; never commit)
-data/
-
-# the curator's own archive, and a backup of it. Personal data — kept in the
-# project folder, deliberately not in version control.
-local-archive/
-
-# packaged builds
-release/
-
-# generated static web export (built by Vercel via `node scripts/export-web.js`)
-web/
-
-# generated design captures
-shots/
-
-# OS noise
-Thumbs.db
-.DS_Store
+.vercel
+.env*
