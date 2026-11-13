@@ -38,8 +38,8 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       <span className="flex flex-col leading-none">
         <span className="display text-[clamp(0.96rem,4vw,1.15rem)] tracking-[0.06em] text-white">AFTERLIGHT</span>
         {!compact && (
-          <span className="mt-1 text-[0.65rem] uppercase tracking-[0.12em] text-cyan/85 sm:tracking-[0.2em]">
-            machines · stories
+          <span className="mt-1 whitespace-nowrap text-[0.55rem] uppercase tracking-[0.08em] text-cyan/85 sm:text-[0.65rem] sm:tracking-[0.12em]">
+            Beyond the last mission
           </span>
         )}
       </span>
