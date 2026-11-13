@@ -5,6 +5,8 @@ import { Database, Link2, Search } from "lucide-react";
 import { SourceLink } from "@/components/ui/Atoms";
 import { NASA_RESOURCES, type NASAResource } from "@/data/resources";
 
+const ABOUT_RESOURCES = NASA_RESOURCES.filter((entry) => !["jpl", "earthdata", "nssdca"].includes(entry.id));
+
 const FILTERS = [
   { id: "all", label: "All resources" },
   { id: "moon", label: "Moon" },
@@ -42,7 +44,7 @@ export default function ResourceLibrary() {
   const [query, setQuery] = useState("");
   const entries = useMemo(() => {
     const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    return NASA_RESOURCES.filter((entry) => {
+    return ABOUT_RESOURCES.filter((entry) => {
       const inFilter = filter === "all" || (filter === "platform" ? entry.kind !== "mission" : entry.destination === filter);
       const text = [entry.label, entry.scope, entry.use, entry.access, entry.note].join(" ").toLowerCase();
       return inFilter && words.every((word) => text.includes(word));
@@ -56,8 +58,8 @@ export default function ResourceLibrary() {
         <h2 id="resource-library-title" className="display text-2xl text-white">NASA research library</h2>
       </div>
       <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
-        Every resource supplied with the challenge is here. Mission references support the archive;
-        the wider platforms help you investigate further. Each card explains its scope and how AFTERLIGHT uses it.
+        Mission references support the archive, and selected data platforms help you investigate further.
+        Each card explains its scope and how AFTERLIGHT uses it.
       </p>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -75,9 +77,8 @@ export default function ResourceLibrary() {
           <h3 className="text-sm font-semibold text-white">Keys & access</h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
             NASA mission pages and the NASA Image and Video Library API are keyless. Some api.nasa.gov endpoints
-            use a NASA API key or a limited DEMO_KEY; there is no separate Space Apps API key. Earthdata focuses
-            on Earth observation and some downloads or services require Earthdata Login. Check the chosen
-            endpoint or dataset documentation before starting.
+            use a NASA API key or a limited DEMO_KEY; there is no separate Space Apps API key.
+            Check the chosen endpoint or dataset documentation before starting.
           </p>
         </div>
       </div>
@@ -104,13 +105,13 @@ export default function ResourceLibrary() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Try InSight or Earthdata"
+              placeholder="Try InSight or NASA APIs"
               className="min-h-11 min-w-0 w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
             />
           </span>
         </label>
       </div>
-      <p className="mt-3 text-xs text-slate-400" role="status">{entries.length} of {NASA_RESOURCES.length} resources shown · source links open in a new tab</p>
+      <p className="mt-3 text-xs text-slate-400" role="status">{entries.length} of {ABOUT_RESOURCES.length} resources shown · source links open in a new tab</p>
 
       {entries.length === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-white/15 p-5">
